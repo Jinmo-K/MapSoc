@@ -15,6 +15,8 @@ interface IDashboardState {
   showContextMenu: boolean;
   data: Data;
   nodeClicks: number;
+  nodeAdded: boolean;
+  zoomAmount: number;
 }
 
 interface Data extends GraphData {
@@ -31,7 +33,9 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       links: testdata.links,
       nodeSequence: testdata.nodeSequence
     },
-    nodeClicks: 0
+    nodeClicks: 0,
+    nodeAdded: false,
+    zoomAmount: 0
   }
 
   componentDidMount() {
@@ -39,6 +43,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     let graph = this.graph.current; 
     graph.d3Force('center', () => null);
     graph.d3Force('collide', forceCollide())
+    this.setState({ zoomAmount: graph.zoom() })
   }
 
   closeContextMenu = () => {
@@ -123,7 +128,8 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         ...prevState.data,
         nodes: [...prevState.data.nodes, newNode],
         nodeSequence: prevState.data.nodeSequence + 1
-      }
+      },
+      nodeAdded: true
     }));
   }
 
@@ -146,14 +152,23 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     const graphProps: ForceGraphProps = { 
       graphData: this.state.data,
       nodeAutoColorBy: "group",
-      onNodeDragEnd: (node: NodeObject) => {
+      onNodeDragEnd: (node) => {
         this.graph.current.d3ReheatSimulation()
         node.fx = node.x;
         node.fy = node.y;
       },
       onNodeClick: this.onNodeClick,
       d3VelocityDecay: 0.1,
-      d3AlphaDecay: 0.1
+      d3AlphaDecay: 0.1,
+      // Zoom callbacks to prevent default zooming out on node creation
+      onZoom: () => {
+        if (this.state.nodeAdded) {
+          this.setState({ nodeAdded: false }, () => this.graph.current?.zoom(this.state.zoomAmount))
+        }
+      },
+      onZoomEnd: ({ k }) => {
+        this.setState({ zoomAmount: k })
+      }
     }
 
     return (

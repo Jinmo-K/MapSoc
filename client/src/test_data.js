@@ -67,5 +67,6 @@ export default {
           name: "Melanie",
           gender: "female"
       }
-  ]
+  ],
+  nodeSequence: 6,
 }

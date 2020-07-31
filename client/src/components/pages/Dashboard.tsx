@@ -1,23 +1,24 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { forceCollide } from 'd3';
-
-import testdata from '../../test_data';
-import testdata5 from '../../test_data';
-
-import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps } from 'react-force-graph-2d';
+import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
 
 import { ContextMenu } from '../../components';
 
 import './Dashboard.css';
+import testdata from '../../test_data';
 
 interface IDashboardProps {
 }
 
 interface IDashboardState {
   showContextMenu: boolean;
-  data: GraphData;
+  data: Data;
   nodeClicks: number;
+}
+
+interface Data extends GraphData {
+  nodeSequence: number;
 }
 
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
@@ -27,12 +28,10 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     showContextMenu: false,
     data: {
       nodes: testdata.nodes,
-      links: testdata.links
+      links: testdata.links,
+      nodeSequence: testdata.nodeSequence
     },
     nodeClicks: 0
-  }
-  constructor(props: IDashboardProps) {
-    super(props)
   }
 
   componentDidMount() {
@@ -55,12 +54,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
           e.clientY < menu.top || 
           e.clientY > menu.bottom)) 
       {
-        let newNode = {
-          id: 100,
-          name: "Test",
-          gender: "male"
-        }
-        this.addNode(newNode);
+        this.createNode();
         this.closeContextMenu();
       }
     }
@@ -108,11 +102,27 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     });
   }
 
-  addNode = (newNode: NodeObject) => {
+  createNode = () => {
+    let contextMenu = this.contextMenu.current!;
+    let graph = this.graph.current;
+    // Get original click position
+    let originX = parseInt(contextMenu.style.left);
+    let originY = parseInt(contextMenu.style.top);
+    // Translate to node canvas position
+    let {x: fx, y: fy} = graph.screen2GraphCoords(originX, originY)
+    // Create new default node
+    let newNode = {
+      id: this.state.data.nodeSequence,
+      name: "New Node"
+    }
+    // Assign coordinates to the node
+    Object.assign(newNode, { fx, fy });
+    // Add it to the list of nodes
     this.setState(prevState => ({
       data: {
         ...prevState.data,
-        nodes: [...prevState.data.nodes, newNode]
+        nodes: [...prevState.data.nodes, newNode],
+        nodeSequence: prevState.data.nodeSequence + 1
       }
     }));
   }
@@ -133,12 +143,11 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       ref: this.contextMenu,
       closeContextMenu: this.closeContextMenu
     }
-    const graph = this.graph
     const graphProps: ForceGraphProps = { 
       graphData: this.state.data,
       nodeAutoColorBy: "group",
       onNodeDragEnd: (node: NodeObject) => {
-        graph.current.d3ReheatSimulation()
+        this.graph.current.d3ReheatSimulation()
         node.fx = node.x;
         node.fy = node.y;
       },
@@ -152,7 +161,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 
         }
-        <ForceGraph2D ref={graph} {...graphProps} />
+        <ForceGraph2D ref={this.graph} {...graphProps} />
       </main>
     );
   }

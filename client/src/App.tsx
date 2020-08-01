@@ -1,11 +1,13 @@
 import React from 'react';
 
-import { Dashboard } from './components';
+import { Dashboard, Navbar } from './components';
 
+import './App.css';
 
 function App() {
   return (
-    <main className="App">
+    <main className='App'>
+      <Navbar />
       <Dashboard />
     </main>
   );

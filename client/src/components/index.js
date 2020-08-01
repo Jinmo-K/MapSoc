@@ -1,4 +1,4 @@
 export * from './shared/PrivateRoute';
 export * from './ContextMenu';
-
-export * from './pages/Dashboard';
+export * from './layout';
+export * from './pages';

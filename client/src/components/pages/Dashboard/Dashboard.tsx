@@ -3,10 +3,11 @@ import { connect } from 'react-redux';
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
 
-import { ContextMenu } from '../../components';
+import { ContextMenu } from '../../../components';
+import Toolbar from './Toolbar';
 
 import './Dashboard.css';
-import testdata from '../../test_data';
+import testdata from '../../../test_data';
 
 interface IDashboardProps {
 }
@@ -17,6 +18,8 @@ interface IDashboardState {
   nodeClicks: number;
   nodeAdded: boolean;
   zoomAmount: number;
+  currentTool: string;
+  hoveredNode: NodeObject | null;
 }
 
 interface Data extends GraphData {
@@ -35,35 +38,64 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     },
     nodeClicks: 0,
     nodeAdded: false,
-    zoomAmount: 0
+    zoomAmount: 0,
+    currentTool: 'pointer',
+    hoveredNode: null,
   }
 
   componentDidMount() {
     // Configure force
     let graph = this.graph.current; 
     graph.d3Force('center', () => null);
-    graph.d3Force('collide', forceCollide())
-    this.setState({ zoomAmount: graph.zoom() })
+    graph.d3Force('collide', forceCollide());
+    this.setState({ zoomAmount: graph.zoom() });
   }
 
   closeContextMenu = () => {
     this.setState({ showContextMenu: false });
   }
 
+  /**
+   * Returns true if user clicked on the context menu
+   * @param e The click event
+   */
+  isContextMenuClick = (e: React.MouseEvent): boolean => {
+    if (!this.state.showContextMenu) return false;
+    let menuPosition = this.contextMenu.current!.getBoundingClientRect();
+    return (
+      !(e.clientX < menuPosition.left || 
+        e.clientX > menuPosition.right || 
+        e.clientY < menuPosition.top || 
+        e.clientY > menuPosition.bottom)
+    );
+  }
+
+  /**
+   * Handles all left-click events
+   * @param e The click event
+   */
   onClick = (e: React.MouseEvent) => {
+    let isMenuClick = this.isContextMenuClick(e);
     // Close context menu if it's open and user clicks outside of it
-    if (this.state.showContextMenu && this.contextMenu && this.contextMenu.current) {  
-      let menu = this.contextMenu.current.getBoundingClientRect();
-      if ((e.clientX < menu.left || 
-          e.clientX > menu.right || 
-          e.clientY < menu.top || 
-          e.clientY > menu.bottom)) 
-      {
-        this.createNode();
-        this.closeContextMenu();
-      }
+    if (this.state.showContextMenu && !isMenuClick) {
+      this.closeContextMenu();
     }
   };
+
+  /**
+   * Called whenever the background of the force graph is clicked. 
+   * 
+   * @param e The click event
+   */
+  onBackgroundClick = (e: MouseEvent) => {
+    if (this.state.currentTool === 'pencil') {
+      this.handlePencilClick(e);
+    }
+  };
+
+  handlePencilClick = (e: MouseEvent) => {
+    this.addNode(e.clientX, e.clientY);
+  }
 
   /**
    * Renders the context menu at the position of the mouse
@@ -107,14 +139,23 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     });
   }
 
-  createNode = () => {
+  onNodeHover = (node: NodeObject | null) => {
+    if (node !== this.state.hoveredNode) {
+      this.setState({ hoveredNode: node });
+    }
+  }
+
+  createNodeFromMenu = () => {
     let contextMenu = this.contextMenu.current!;
-    let graph = this.graph.current;
-    // Get original click position
+    // Get original right click position of the menu
     let originX = parseInt(contextMenu.style.left);
     let originY = parseInt(contextMenu.style.top);
+    this.addNode(originX, originY);
+  }
+
+  addNode = (originX: number, originY: number) => {
     // Translate to node canvas position
-    let {x: fx, y: fy} = graph.screen2GraphCoords(originX, originY)
+    let {x: fx, y: fy} = this.graph.current.screen2GraphCoords(originX, originY)
     // Create new default node
     let newNode = {
       id: this.state.data.nodeSequence,
@@ -144,6 +185,10 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     this.graph.current.d3ReheatSimulation();
   }
 
+  selectTool = (tool: string) => {
+    this.setState({ currentTool: tool });
+  }
+
   render() {
     const contextMenuProps = {
       ref: this.contextMenu,
@@ -152,12 +197,14 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     const graphProps: ForceGraphProps = { 
       graphData: this.state.data,
       nodeAutoColorBy: "group",
+      onBackgroundClick: this.onBackgroundClick,
       onNodeDragEnd: (node) => {
         this.graph.current.d3ReheatSimulation()
         node.fx = node.x;
         node.fy = node.y;
       },
       onNodeClick: this.onNodeClick,
+      onNodeHover: this.onNodeHover,
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
       // Zoom callbacks to prevent default zooming out on node creation
@@ -172,11 +219,14 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     }
 
     return (
-      <main id='dashboard' onContextMenu={this.onRightClick} onClick={this.onClick}>
+      <main id='dashboard' onClick={this.onClick}>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 
         }
-        <ForceGraph2D ref={this.graph} {...graphProps} />
+        <Toolbar selectTool={this.selectTool} />
+        <section className='graph' onContextMenu={this.onRightClick}>
+          <ForceGraph2D ref={this.graph} {...graphProps} />
+        </section>
       </main>
     );
   }

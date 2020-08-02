@@ -16,7 +16,7 @@ interface IDashboardState {
   showContextMenu: boolean;
   data: Data;
   nodeClicks: number;
-  nodeAdded: boolean;
+  shouldPreventZoom: boolean;
   zoomAmount: number;
   currentTool: string;
   hoveredNode: NodeObject | null;
@@ -37,7 +37,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       nodeSequence: testdata.nodeSequence
     },
     nodeClicks: 0,
-    nodeAdded: false,
+    shouldPreventZoom: false,
     zoomAmount: 0,
     currentTool: 'pointer',
     hoveredNode: null,
@@ -88,8 +88,10 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * @param e The click event
    */
   onBackgroundClick = (e: MouseEvent) => {
-    if (this.state.currentTool === 'pencil') {
-      this.handlePencilClick(e);
+    switch (this.state.currentTool) {
+      case 'pencil':
+        this.handlePencilClick(e);
+        break;
     }
   };
 
@@ -122,21 +124,25 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * @param node The node that was clicked
    */
   onNodeClick = (node: NodeObject) => {
-    this.setState(prevState => {
-      // Double click unsticks a node's position
-      if (prevState.nodeClicks >= 1) {
-        this.unstickNode(node);
-      }
-      // Reset number of clicks if another has not been detected within the interval
-      setTimeout(() => {
-        this.setState({ nodeClicks: 0 });
-      }, 200);
-      // Update the number of clicks
-      return {
-        ...prevState,
-        nodeClicks: prevState.nodeClicks + 1
-      }
-    });
+    if (this.state.currentTool === 'pointer') {
+      this.setState(prevState => {
+        // Double click unsticks a node's position
+        if (prevState.nodeClicks >= 1) {
+          this.unstickNode(node);
+        }
+        // Reset number of clicks if another has not been detected within the interval
+        setTimeout(() => {
+          this.setState({ nodeClicks: 0 });
+        }, 200);
+        // Update the number of clicks
+        return {
+          ...prevState,
+          nodeClicks: prevState.nodeClicks + 1
+        }
+      });
+    } else if (this.state.currentTool === 'eraser') {
+      this.deleteNode(node);
+    }
   }
 
   onNodeHover = (node: NodeObject | null) => {
@@ -170,8 +176,23 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         nodes: [...prevState.data.nodes, newNode],
         nodeSequence: prevState.data.nodeSequence + 1
       },
-      nodeAdded: true
+      shouldPreventZoom: true
     }));
+  }
+
+  deleteNode = (node: NodeObject) => {
+    this.setState(prevState => {
+      let nextNodes = prevState.data.nodes.filter(n => n !== node);
+      let nextLinks = prevState.data.links.filter(link => link.source !== node && link.target !== node);
+      return {
+          data: {
+            ...prevState.data,
+            nodes: nextNodes,
+            links: nextLinks
+          },
+          shouldPreventZoom: true
+      }
+    });
   }
 
   /**
@@ -207,10 +228,10 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       onNodeHover: this.onNodeHover,
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
-      // Zoom callbacks to prevent default zooming out on node creation
+      // Zoom callbacks to prevent default zooming out/in on node creation/deletion
       onZoom: () => {
-        if (this.state.nodeAdded) {
-          this.setState({ nodeAdded: false }, () => this.graph.current?.zoom(this.state.zoomAmount))
+        if (this.state.shouldPreventZoom) {
+          this.setState({ shouldPreventZoom: false }, () => this.graph.current?.zoom(this.state.zoomAmount))
         }
       },
       onZoomEnd: ({ k }) => {

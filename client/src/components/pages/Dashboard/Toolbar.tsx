@@ -13,7 +13,7 @@ const tools = [
   'selection',
 ];
 
-const Toolbar: React.FC<IToolbarProps> = ({ selectTool }) => {
+const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
   return (
     <section className='toolbar'>
       {
@@ -35,4 +35,4 @@ const Toolbar: React.FC<IToolbarProps> = ({ selectTool }) => {
   );
 } 
 
-export default Toolbar;
+export default React.memo(Toolbar);

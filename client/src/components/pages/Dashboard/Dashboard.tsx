@@ -5,6 +5,7 @@ import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps
 
 import { ContextMenu } from '../../../components';
 import Toolbar from './Toolbar';
+import Details from './Details';
 
 import './Dashboard.css';
 import testdata from '../../../test_data';
@@ -19,16 +20,23 @@ interface IDashboardState {
   shouldPreventZoom: boolean;
   zoomAmount: number;
   currentTool: string;
-  hoveredNode: NodeObject | null;
+  currentNode: GraphNode | null;
+  hoveredNode: GraphNode | null;
+  hasClickBeenHandled: boolean;
 }
 
 interface Data extends GraphData {
   nodeSequence: number;
 }
 
+export type GraphNode = NodeObject & {
+  name?: string;
+}
+
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   private graph = React.createRef() as React.MutableRefObject<ForceGraphMethods>;
   private contextMenu = React.createRef<HTMLDivElement>();
+  private details = React.createRef<HTMLDivElement>();
   readonly state: IDashboardState = {
     showContextMenu: false,
     data: {
@@ -40,7 +48,9 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     shouldPreventZoom: false,
     zoomAmount: 0,
     currentTool: 'pointer',
+    currentNode: null,
     hoveredNode: null,
+    hasClickBeenHandled: true,
   }
 
   componentDidMount() {
@@ -75,9 +85,12 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * @param e The click event
    */
   onClick = (e: React.MouseEvent) => {
+    this.setState({ hasClickBeenHandled: false });
     let isMenuClick = this.isContextMenuClick(e);
     // Close context menu if it's open and user clicks outside of it
     if (this.state.showContextMenu && !isMenuClick) {
+      // Let all other click handlers know that no further action is required
+      this.setState({ hasClickBeenHandled: true });
       this.closeContextMenu();
     }
   };
@@ -88,10 +101,18 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * @param e The click event
    */
   onBackgroundClick = (e: MouseEvent) => {
-    switch (this.state.currentTool) {
-      case 'pencil':
-        this.handlePencilClick(e);
-        break;
+    if (!this.state.hasClickBeenHandled) {
+      switch (this.state.currentTool) {
+        case 'pointer':
+          if (this.state.currentNode) {
+            this.setState({ currentNode: null });
+          }
+          break;
+        case 'pencil':
+          this.handlePencilClick(e);
+          break;
+      }
+      this.setState({ hasClickBeenHandled: true });
     }
   };
 
@@ -123,29 +144,36 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * 
    * @param node The node that was clicked
    */
-  onNodeClick = (node: NodeObject) => {
-    if (this.state.currentTool === 'pointer') {
-      this.setState(prevState => {
-        // Double click unsticks a node's position
-        if (prevState.nodeClicks >= 1) {
-          this.unstickNode(node);
-        }
-        // Reset number of clicks if another has not been detected within the interval
-        setTimeout(() => {
-          this.setState({ nodeClicks: 0 });
-        }, 200);
-        // Update the number of clicks
-        return {
-          ...prevState,
-          nodeClicks: prevState.nodeClicks + 1
-        }
-      });
-    } else if (this.state.currentTool === 'eraser') {
-      this.deleteNode(node);
+  onNodeClick = (node: GraphNode) => {
+    if (!this.state.hasClickBeenHandled) {
+      if (this.state.currentTool === 'pointer') {
+        this.setState({ currentNode: node });
+        this.trackNodeDblClick(node);
+      } else if (this.state.currentTool === 'eraser') {
+        this.deleteNode(node);
+      }
     }
   }
 
-  onNodeHover = (node: NodeObject | null) => {
+  trackNodeDblClick = (node: GraphNode) => {
+    this.setState(prevState => {
+      // Double click unsticks a node's position
+      if (prevState.nodeClicks >= 1) {
+        this.unstickNode(node);
+      }
+      // Reset number of clicks if another has not been detected within the interval
+      setTimeout(() => {
+        this.setState({ nodeClicks: 0 });
+      }, 200);
+      // Update the number of clicks
+      return {
+        ...prevState,
+        nodeClicks: prevState.nodeClicks + 1
+      }
+    });
+  }
+
+  onNodeHover = (node: GraphNode | null) => {
     if (node !== this.state.hoveredNode) {
       this.setState({ hoveredNode: node });
     }
@@ -176,11 +204,12 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         nodes: [...prevState.data.nodes, newNode],
         nodeSequence: prevState.data.nodeSequence + 1
       },
-      shouldPreventZoom: true
-    }));
+      shouldPreventZoom: true,
+      currentNode: newNode,
+    }), () => console.log(this.state));
   }
 
-  deleteNode = (node: NodeObject) => {
+  deleteNode = (node: GraphNode) => {
     this.setState(prevState => {
       let nextNodes = prevState.data.nodes.filter(n => n !== node);
       let nextLinks = prevState.data.links.filter(link => link.source !== node && link.target !== node);
@@ -200,7 +229,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * 
    * @param node The node to unstick
    */
-  unstickNode = (node: NodeObject) => {
+  unstickNode = (node: GraphNode) => {
     delete node.fx;
     delete node.fy;
     this.graph.current.d3ReheatSimulation();
@@ -215,10 +244,15 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       ref: this.contextMenu,
       closeContextMenu: this.closeContextMenu
     }
+    const detailsProps = {
+      ref: this.details,
+      node: this.state.currentNode
+    }
     const graphProps: ForceGraphProps = { 
       graphData: this.state.data,
       nodeAutoColorBy: "group",
       onBackgroundClick: this.onBackgroundClick,
+      onNodeDrag: (node) => this.setState({ currentNode: node }),
       onNodeDragEnd: (node) => {
         this.graph.current.d3ReheatSimulation()
         node.fx = node.x;
@@ -239,10 +273,15 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       }
     }
 
+    console.log('render', this.state)
+
     return (
       <main id='dashboard' onClick={this.onClick}>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 
+        }
+        {this.state.currentNode 
+          &&  <Details {...detailsProps} /> 
         }
         <Toolbar selectTool={this.selectTool} />
         <section className='graph' onContextMenu={this.onRightClick}>

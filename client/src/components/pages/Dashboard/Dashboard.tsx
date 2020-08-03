@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDomServer from 'react-dom/server';
 import { connect } from 'react-redux';
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
@@ -21,16 +22,19 @@ interface IDashboardState {
   zoomAmount: number;
   currentTool: string;
   currentNode: GraphNode | null;
+  isEditingNewNode: boolean;
   hoveredNode: GraphNode | null;
   hasClickBeenHandled: boolean;
 }
 
 interface Data extends GraphData {
   nodeSequence: number;
+  nodes: GraphNode[];
 }
 
 export type GraphNode = NodeObject & {
   name?: string;
+  color?: string;
 }
 
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
@@ -49,6 +53,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     zoomAmount: 0,
     currentTool: 'pointer',
     currentNode: null,
+    isEditingNewNode: false,
     hoveredNode: null,
     hasClickBeenHandled: true,
   }
@@ -193,7 +198,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     // Create new default node
     let newNode = {
       id: this.state.data.nodeSequence,
-      name: "New Node"
+      name: ""
     }
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });
@@ -206,7 +211,8 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       },
       shouldPreventZoom: true,
       currentNode: newNode,
-    }), () => console.log(this.state));
+      isEditingNewNode: true
+    }));
   }
 
   deleteNode = (node: GraphNode) => {
@@ -235,6 +241,33 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     this.graph.current.d3ReheatSimulation();
   }
 
+  handleNewNodeNameChange = (e: React.FormEvent<HTMLInputElement>) => {
+    let nodes = [...this.state.data.nodes];
+    nodes[this.state.data.nodes.length - 1].name = e.currentTarget.value;
+    this.setState(prevState => ({
+      data: {
+        ...prevState.data,
+        nodes
+      }
+    }));
+  }
+
+  drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    const label = node.name as string;
+    const fontSize = 12;
+    ctx.font = `${fontSize}px Sans-Serif`;
+    const textWidth = ctx.measureText(label).width;
+    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(node.x! - bckgDimensions[0] / 2, node.y! - bckgDimensions[1] / 2, ...bckgDimensions as [number, number]);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = node.color!;
+    ctx.fillText(label, node.x!, node.y!);
+  }
+
   selectTool = (tool: string) => {
     this.setState({ currentTool: tool });
   }
@@ -246,7 +279,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     }
     const detailsProps = {
       ref: this.details,
-      node: this.state.currentNode
+      node: {...this.state.currentNode}
     }
     const graphProps: ForceGraphProps = { 
       graphData: this.state.data,
@@ -260,6 +293,8 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       },
       onNodeClick: this.onNodeClick,
       onNodeHover: this.onNodeHover,
+      nodeCanvasObject: this.drawNode,
+      nodeCanvasObjectMode: () => 'before',
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
       // Zoom callbacks to prevent default zooming out/in on node creation/deletion
@@ -273,8 +308,6 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       }
     }
 
-    console.log('render', this.state)
-
     return (
       <main id='dashboard' onClick={this.onClick}>
         {this.state.showContextMenu 
@@ -282,6 +315,22 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         }
         {this.state.currentNode 
           &&  <Details {...detailsProps} /> 
+        }
+        {this.state.isEditingNewNode 
+          &&  <input 
+                id='new-node-name-input'
+                autoFocus
+                type='text' 
+                onChange={this.handleNewNodeNameChange}
+                onBlur={() => this.setState({ isEditingNewNode: false })}
+                onKeyUp={(e) => {
+                  if (e.keyCode == 13) {
+                    this.setState({ isEditingNewNode: false })
+                  }
+                }}
+                style={{position: 'absolute', opacity: 0}}
+                autoComplete='off'
+              />
         }
         <Toolbar selectTool={this.selectTool} />
         <section className='graph' onContextMenu={this.onRightClick}>

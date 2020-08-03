@@ -16,4 +16,14 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
   )
 }
 
-export default React.memo(React.forwardRef(Details));
+
+export default React.memo(
+  React.forwardRef(Details), 
+  (prevProps, nextProps) => { 
+    let prevNode = prevProps.node as GraphNode;
+    let nextNode = nextProps.node as GraphNode;
+    return (
+      prevNode.name === nextNode.name
+    )
+  }
+);

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDomServer from 'react-dom/server';
 import { connect } from 'react-redux';
+import forceLink from 'react-force-graph-2d'
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
 
@@ -24,7 +25,11 @@ interface IDashboardState {
   currentNode: GraphNode | null;
   isEditingNewNode: boolean;
   hoveredNode: GraphNode | null;
+  isAddingLink: boolean;
   hasClickBeenHandled: boolean;
+  mouseX: number;
+  mouseY: number;
+  ctx: CanvasRenderingContext2D | null;
 }
 
 interface Data extends GraphData {
@@ -55,7 +60,11 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     currentNode: null,
     isEditingNewNode: false,
     hoveredNode: null,
+    isAddingLink: false,
     hasClickBeenHandled: true,
+    mouseX: 0,
+    mouseY: 0,
+    ctx: null,
   }
 
   componentDidMount() {
@@ -122,7 +131,12 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
   };
 
   handlePencilClick = (e: MouseEvent) => {
-    this.addNode(e.clientX, e.clientY);
+    if (this.state.isAddingLink) {
+      this.setState({ isAddingLink: false });
+    }
+    else {
+      this.addNode(e.clientX, e.clientY);
+    }
   }
 
   /**
@@ -143,6 +157,14 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     });
   }
 
+  onMouseMove = (e: React.MouseEvent) => {
+    let {x, y} = this.graph.current.screen2GraphCoords(e.clientX, e.clientY);
+    this.setState({
+      mouseX: x,
+      mouseY: y
+    })
+  }
+
   /**
    * Callback function for node left-button clicks. Sends the node details to the inspector 
    * and also tracks double-clicking for unsticking node positions.
@@ -154,8 +176,25 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       if (this.state.currentTool === 'pointer') {
         this.setState({ currentNode: node });
         this.trackNodeDblClick(node);
-      } else if (this.state.currentTool === 'eraser') {
+      } 
+      else if (this.state.currentTool === 'eraser') {
         this.deleteNode(node);
+        this.setState({ isAddingLink: false });
+      }
+      else if (this.state.currentTool === 'pencil') {
+        this.setState({ 
+          currentNode: node,
+          isAddingLink: true,
+          mouseX: node.x!,
+          mouseY: node.y!
+        });
+        // Register 'esc' key events to cancel adding new link
+        document.onkeyup = (e) => {
+          if (e.keyCode === 27) {
+            this.setState({ isAddingLink: false });
+            document.onkeyup = null;
+          }
+        }
       }
     }
   }
@@ -182,6 +221,16 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     if (node !== this.state.hoveredNode) {
       this.setState({ hoveredNode: node });
     }
+  }
+
+  onNodeDrag = (node: GraphNode) => {
+    this.setState({ currentNode: node });
+  }
+
+  onNodeDragEnd = (node: GraphNode) => {
+    this.graph.current.d3ReheatSimulation();
+    node.fx = node.x;
+    node.fy = node.y;
   }
 
   createNodeFromMenu = () => {
@@ -253,6 +302,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
   }
 
   drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    if (!this.state.ctx) this.setState({ ctx })
     const label = node.name as string;
     const fontSize = 12;
     ctx.font = `${fontSize}px Sans-Serif`;
@@ -266,6 +316,21 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     ctx.textBaseline = 'middle';
     ctx.fillStyle = node.color!;
     ctx.fillText(label, node.x!, node.y!);
+
+    // If a new link is being added, draw it based on coordinates of the selected node
+    if (node === this.state.currentNode && this.state.isAddingLink) {
+      this.drawNewLink(ctx, node.x!, node.y!);
+    }
+  }
+
+  drawNewLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    ctx.moveTo(originX, originY);
+    ctx.lineTo(this.state.mouseX, this.state.mouseY);
+    ctx.stroke();
+    ctx.closePath();
   }
 
   selectTool = (tool: string) => {
@@ -285,12 +350,8 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       graphData: this.state.data,
       nodeAutoColorBy: "group",
       onBackgroundClick: this.onBackgroundClick,
-      onNodeDrag: (node) => this.setState({ currentNode: node }),
-      onNodeDragEnd: (node) => {
-        this.graph.current.d3ReheatSimulation()
-        node.fx = node.x;
-        node.fy = node.y;
-      },
+      onNodeDrag: this.onNodeDrag,
+      onNodeDragEnd: this.onNodeDragEnd,
       onNodeClick: this.onNodeClick,
       onNodeHover: this.onNodeHover,
       nodeCanvasObject: this.drawNode,
@@ -333,7 +394,11 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
               />
         }
         <Toolbar selectTool={this.selectTool} />
-        <section className='graph' onContextMenu={this.onRightClick}>
+        <section 
+          className='graph' 
+          onContextMenu={this.onRightClick} 
+          onMouseMove={this.state.isAddingLink ? this.onMouseMove : undefined}
+        >
           <ForceGraph2D ref={this.graph} {...graphProps} />
         </section>
       </main>

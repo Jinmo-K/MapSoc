@@ -35,7 +35,8 @@ export default {
           color: 'lightgreen',
           size: 500,
           fx: 0,
-          fy: 0
+          fy: 0,
+          neighbours: new Set(['2', '3'])
       },
       {
           id: '1',
@@ -43,29 +44,34 @@ export default {
           color: 'aqua',
           size: 500,
           fx: -35,
-          fy: 60
+          fy: 60,
+          neighbours: new Set(['2'])
       },
       // People
       {
           id: "2",
           name: "Mary",
           gender: "female",
-          size: 300
+          size: 300,
+          neighbours: new Set(['1', '0'])
       },
       {
           id: "3",
           name: "Roy",
-          gender: "male"
+          gender: "male",
+          neighbours: new Set(['0', '4'])
       },
       {
           id: "4",
           name: "Frank",
-          gender: "male"
+          gender: "male",
+          neighbours: new Set(['0'])
       },
       {
           id: "5",
           name: "Melanie",
-          gender: "female"
+          gender: "female",
+          neighbours: new Set(['1'])
       }
   ],
   nodeSequence: 6,

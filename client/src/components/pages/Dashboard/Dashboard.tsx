@@ -40,6 +40,7 @@ interface Data extends GraphData {
 export type GraphNode = NodeObject & {
   name?: string;
   color?: string;
+  neighbours?: Set<string | number>;
 }
 
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
@@ -182,18 +183,32 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         this.setState({ isAddingLink: false });
       }
       else if (this.state.currentTool === 'pencil') {
-        this.setState({ 
-          currentNode: node,
-          isAddingLink: true,
-          mouseX: node.x!,
-          mouseY: node.y!
-        });
-        // Register 'esc' key events to cancel adding new link
-        document.onkeyup = (e) => {
-          if (e.keyCode === 27) {
-            this.setState({ isAddingLink: false });
-            document.onkeyup = null;
-          }
+        this.handleNodePencilClick(node);
+      }
+    }
+    this.setState({ hasClickBeenHandled: true });
+  }
+
+  handleNodePencilClick = (node: GraphNode) => {
+    if (this.state.isAddingLink) {
+      if (!node.neighbours?.has(this.state.currentNode!.id!)) {
+        this.addLink(this.state.currentNode!.id!, node.id!);
+        this.setState({ currentNode: null })
+      }
+      this.setState({ isAddingLink: false });
+    }
+    else {
+      this.setState({ 
+        currentNode: node,
+        isAddingLink: true,
+        mouseX: node.x!,
+        mouseY: node.y!
+      });
+      // Register 'esc' key events to cancel adding new link
+      document.onkeyup = (e) => {
+        if (e.keyCode === 27) {
+          this.setState({ isAddingLink: false });
+          document.onkeyup = null;
         }
       }
     }
@@ -247,19 +262,24 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     // Create new default node
     let newNode = {
       id: this.state.data.nodeSequence,
-      name: ""
+      name: "",
+      neighbours: new Set<string | number>()
     }
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });
     // Add it to the list of nodes
+    this.pushNode(newNode);
+  }
+
+  pushNode = (node: GraphNode) => {
     this.setState(prevState => ({
       data: {
         ...prevState.data,
-        nodes: [...prevState.data.nodes, newNode],
+        nodes: [...prevState.data.nodes, node],
         nodeSequence: prevState.data.nodeSequence + 1
       },
       shouldPreventZoom: true,
-      currentNode: newNode,
+      currentNode: node,
       isEditingNewNode: true
     }));
   }
@@ -321,6 +341,30 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     if (node === this.state.currentNode && this.state.isAddingLink) {
       this.drawNewLink(ctx, node.x!, node.y!);
     }
+  }
+
+  addLink = (source: string | number, target: string | number) => {
+    let newLink = {
+      source, 
+      target
+    };
+    this.pushLink(newLink);
+  }
+
+  pushLink = (link: LinkObject) => {
+    // Add each node to the other's set of neighbours
+    let nextNodes = [...this.state.data.nodes];
+    let [nodeA, nodeB] = nextNodes.filter(node => node.id === link.source || node.id === link.target);
+    nodeA.neighbours!.add(nodeA.id === link.source ? link.target as string : link.source as string);
+    nodeB.neighbours!.add(nodeB.id === link.source ? link.target as string : link.source as string)
+
+    this.setState(prevState => ({
+      data: {
+        ...prevState.data,
+        links: [...prevState.data.links, link],
+        nodes: nextNodes
+      }
+    }));
   }
 
   drawNewLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {

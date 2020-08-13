@@ -14,7 +14,7 @@ import testdata from '../../../test_data';
 
 interface IDashboardProps {
 }
-
+// TODO: adding hoveredObject, inspectedObject..
 interface IDashboardState {
   showContextMenu: boolean;
   data: Data;
@@ -336,6 +336,19 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     ctx.textBaseline = 'middle';
     ctx.fillStyle = node.color!;
     ctx.fillText(label, node.x!, node.y!);
+  
+    if (node === this.state.hoveredNode) {
+      ctx.beginPath();
+      ctx.arc(node.x!, node.y!, 4 * 1.4, 0, 2 * Math.PI, false);
+      ctx.fillStyle = 'rgba(255, 188, 71, 0.7)';
+      ctx.fill();
+    }
+    else if (this.state.hoveredNode?.neighbours?.has(node.id!)) {
+      ctx.beginPath();
+      ctx.arc(node.x!, node.y!, 4 * 1.4, 0, 2 * Math.PI, false);
+      ctx.fillStyle = 'rgba(255, 150, 71, 0.2)';
+      ctx.fill();
+    }
 
     // If a new link is being added, draw it based on coordinates of the selected node
     if (node === this.state.currentNode && this.state.isAddingLink) {
@@ -400,6 +413,9 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       onNodeHover: this.onNodeHover,
       nodeCanvasObject: this.drawNode,
       nodeCanvasObjectMode: () => 'before',
+      linkWidth: 4,
+      onLinkHover: this.onLinkHover,
+      onLinkClick: this.onLinkClick,
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
       // Zoom callbacks to prevent default zooming out/in on node creation/deletion
@@ -410,7 +426,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       },
       onZoomEnd: ({ k }) => {
         this.setState({ zoomAmount: k })
-      }
+      },
     }
 
     return (

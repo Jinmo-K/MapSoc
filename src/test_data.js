@@ -36,7 +36,7 @@ export default {
           size: 500,
           fx: 0,
           fy: 0,
-          neighbours: new Set(['2', '3'])
+          neighbours: new Set(['2', '3', '4'])
       },
       {
           id: '1',
@@ -45,7 +45,7 @@ export default {
           size: 500,
           fx: -35,
           fy: 60,
-          neighbours: new Set(['2'])
+          neighbours: new Set(['2', '5'])
       },
       // People
       {
@@ -65,7 +65,7 @@ export default {
           id: "4",
           name: "Frank",
           gender: "male",
-          neighbours: new Set(['0'])
+          neighbours: new Set(['0', '3'])
       },
       {
           id: "5",

@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { RootState } from '../../store/reducers';
-import { signup } from '../../store/actions';
-import { useInput } from '../../helpers/useInput';
+import { RootState } from '../../../store/reducers';
+import { signup } from '../../../store/actions';
+import { useInput } from '../../../helpers/useInput';
 
-import './Signup.css';
 
 interface ISignupProps extends PropsFromRedux { 
 }
@@ -47,10 +46,10 @@ const SignupPage: React.FC<ISignupProps> = ({ authErrors, signup }) => {
   }, [hasBeenSubmitted, name, email, password, password2, authErrors]);
 
   return (
-    <div id='signup'>
+    <main id='signup' className='auth-page main-container'>
       <div className='auth-form-container'>
         <div className='form-logo'>
-          <img src='/Logo-banner.png' alt='Musee logo' />
+          <img src='/Logo-banner.png' alt='MapSoc logo' />
         </div>
         <form onSubmit={handleSubmit} noValidate>
           {/* Name */}
@@ -141,7 +140,7 @@ const SignupPage: React.FC<ISignupProps> = ({ authErrors, signup }) => {
       <div className='auth-form-container'>
         Already have an account? <Link to='/login' className='form-link'>Login</Link>
       </div>
-    </div>
+    </main>
   )
 }
 

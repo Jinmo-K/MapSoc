@@ -414,8 +414,8 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       nodeCanvasObject: this.drawNode,
       nodeCanvasObjectMode: () => 'before',
       linkWidth: 4,
-      onLinkHover: this.onLinkHover,
-      onLinkClick: this.onLinkClick,
+      // onLinkHover: this.onLinkHover,
+      // onLinkClick: this.onLinkClick,
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
       // Zoom callbacks to prevent default zooming out/in on node creation/deletion

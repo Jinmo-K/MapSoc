@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { RootState } from '../../store/reducers';
-import { login } from '../../store/actions';
-import { useInput } from '../../helpers/useInput';
+import { RootState } from '../../../store/reducers';
+import { login } from '../../../store/actions';
+import { useInput } from '../../../helpers/useInput';
 
 import './Login.css';
 
@@ -23,7 +23,7 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
     if (Object.keys(errors).length === 0) {
       login(email, password);
     }
-  }
+  };
 
   useEffect(() => {
     if (hasBeenSubmitted) {
@@ -34,19 +34,19 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
         return nextErrors;
       })
     }
-  }, [hasBeenSubmitted, email, password])
+  }, [hasBeenSubmitted, email, password]);
 
   return (
-    <div id='login'>
+    <main id='login' className='auth-page main-container'>
       <div className='auth-form-container'>
         <div className='form-logo'>
-          <img src='/Logo-banner.png' alt='Musee logo' />
+          <img src='/Logo-banner.png' alt='MapSoc logo' />
         </div>
         <form onSubmit={handleFormSubmit} noValidate>
           <div className='form-group'>
             <label className='sr-only' htmlFor='login-email'>Email</label>
             <input 
-              className='form-input'
+              className={errors.email ? 'form-input-error' : 'form-input'}
               type='text' 
               id='login-email' 
               name='email' 
@@ -64,7 +64,7 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
           <div className='form-group'>
             <label className='sr-only' htmlFor='login-password'>Password</label>
             <input 
-              className='form-input'
+              className={errors.password ? 'form-input-error' : 'form-input'}
               type='password' 
               id='login-password' 
               name='password' 
@@ -91,11 +91,12 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
       <div className='auth-form-container'>
         Don't have an account? <Link to='/signup' className='form-link'>Sign up</Link>
       </div>
-    </div>
+    </main>
   );
 }
 
 const mapStateToProps = (state: RootState) => ({
+  auth: state.auth,
 });
 
 const mapDispatchToProps = {

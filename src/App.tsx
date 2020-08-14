@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Switch } from 'react-router-dom';
 
 import { RootState } from './store/reducers';
 import { Navbar } from './components';
@@ -9,9 +9,10 @@ import './App.css';
 
 
 interface IAppProps extends PropsFromRedux {
+  children: JSX.Element
 }
 
-const App: React.FC<IAppProps> = ({ auth, children}) => {
+const App: React.FC<IAppProps> = ({ auth, children }) => {
   const location = useLocation();
 
   return (
@@ -23,7 +24,13 @@ const App: React.FC<IAppProps> = ({ auth, children}) => {
       }
 
       {/* Routes */}
-      {React.cloneElement(children as JSX.Element, {isLoggedIn: auth.isLoggedIn})}
+      <Switch>
+      {
+        React.Children.map(children, child => {
+          return React.cloneElement(child as JSX.Element, {isLoggedIn: auth.isLoggedIn});
+        })
+      }
+      </Switch>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import './Home.css';
 import { GraphBg } from './GraphBg';
 
-interface IHomeProps {
+import './Home.css';
 
+interface IHomeProps {
 }
 
 export const Home: React.FC<IHomeProps> = () => {

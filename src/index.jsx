@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
-import { Redirect, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { Redirect, BrowserRouter as Router } from 'react-router-dom';
 
 import { store } from './store';
 import App from './App';
@@ -21,13 +21,11 @@ render(
   <Provider store={store}>
     <Router>
       <App>
-        <Switch>
-          <GuestRoute exact path='/' component={Home} />
-          <GuestRoute path='/login' component={Login} />
-          <GuestRoute path='/signup' component={Signup} />
-          <PrivateRoute path='/dashboard' component={Dashboard} />
-          <Redirect to='/' />
-        </Switch>
+        <GuestRoute exact path='/' component={Home} />
+        <GuestRoute path='/login' component={Login} />
+        <GuestRoute path='/signup' component={Signup} />
+        <PrivateRoute path='/dashboard' component={Dashboard} />
+        <Redirect to='/' />
       </App>
     </Router>
   </Provider>,

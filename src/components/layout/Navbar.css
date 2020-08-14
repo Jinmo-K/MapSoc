@@ -1,6 +1,6 @@
 .navbar {
   display: flex;
-  position: relative;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -8,4 +8,5 @@
   height: 44px;
   padding: 0 15px 0 15px;
   align-items: center;
+  z-index: 2000;
 }

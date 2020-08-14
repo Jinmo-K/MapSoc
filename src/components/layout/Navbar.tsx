@@ -1,16 +1,24 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import './Navbar.css';
 
-export const Navbar: React.FC = () => {
+interface INavbarProps {
+  isLoggedIn: boolean;
+}
+
+export const Navbar: React.FC<INavbarProps> = ({ isLoggedIn }) => {
   return (
     <nav className='navbar'>
-      <p>
+      <Link to='/' role='banner'>
         MapSoc
-      </p>
-      <p>
-        Profile
-      </p>
+      </Link>
+      {
+        (isLoggedIn)
+        &&  <p>
+              Profile Icon
+            </p>
+      }
     </nav>
   );
 };

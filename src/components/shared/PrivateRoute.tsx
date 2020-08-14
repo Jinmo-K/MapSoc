@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 
-export const PrivateRoute: React.FC<any> = ({ component: Component, isAuthenticated, ...rest }) => (
+export const PrivateRoute: React.FC<any> = ({ component: Component, isLoggedIn, ...rest }) => (
   <Route {...rest} render={props => (
-    (isAuthenticated)
+    (isLoggedIn)
       ? <Component {...props} />
       : <Redirect to='/' />
   )} />

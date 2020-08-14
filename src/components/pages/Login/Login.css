@@ -55,10 +55,9 @@
 .form-submit {
   height: 40px;
   width: 100%;
-  border-radius: 3px;
-  border: solid 1px #317291;
-  background: linear-gradient(45deg, #349fd1, #52cfee);
-  color: white;
+  border: solid 3px #408ab8;
+  background: rgba(137, 188, 219, 0.3);
+  color: #408ab8;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.2rem;
@@ -66,8 +65,8 @@
   cursor: pointer;
 }
 
-.form-submit:hover {
-  background: linear-gradient(45deg, #52cfee, #349fd1);
+.form-submit:hover:enabled {
+  background: rgba(137, 188, 219, 0.5);
 }
 
 .form-submit:focus {
@@ -78,15 +77,14 @@
   filter: brightness(90%);
 }
 
-.form-submit:disabled, .form-submit:disabled:hover {
+.form-submit:disabled {
   opacity: 0.5;
-  background: linear-gradient(45deg, #349fd1, #52cfee);
   cursor: default;
 }
 
 .form-link {
   text-decoration: none;
-  color: #349fd1;
+  color: #408ab8;
 }
 
 .form-group {

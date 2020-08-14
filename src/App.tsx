@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { Redirect, BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { RootState } from './store/reducers';
-import { Dashboard, Navbar, PrivateRoute, Home, Signup, Login } from './components';
+import { Navbar } from './components';
 
 import './App.css';
 
@@ -11,31 +11,19 @@ import './App.css';
 interface IAppProps extends PropsFromRedux {
 }
 
-const App: React.FC<IAppProps> = ({ auth, }) => {
+const App: React.FC<IAppProps> = ({ auth, children}) => {
+  const location = useLocation();
+
   return (
     <div id='app'>
-      <Router>
-        <Navbar />
-        <Switch>
-          <Route exact path='/' component={Home} />
-          <Route path='/login'>
-            {
-              (auth.isLoggedIn)
-                ? <Redirect to='/dashboard' />
-                : <Login />
-            }
-          </Route>
-          <Route path='/signup'>
-            {
-              (auth.isLoggedIn)
-                ? <Redirect to='/dashboard' />
-                : <Signup />
-            }
-          </Route>
-          <PrivateRoute path='/dashboard' component={Dashboard} />
-          <Redirect to='/' />
-        </Switch>
-      </Router>
+      {/* Navbar */}
+      {
+        (location.pathname !== '/')
+        && <Navbar isLoggedIn={auth.isLoggedIn} />
+      }
+
+      {/* Routes */}
+      {React.cloneElement(children as JSX.Element, {isLoggedIn: auth.isLoggedIn})}
     </div>
   );
 }

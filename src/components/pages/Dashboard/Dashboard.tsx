@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDomServer from 'react-dom/server';
 import { connect } from 'react-redux';
 import forceLink from 'react-force-graph-2d'
 import { forceCollide } from 'd3';

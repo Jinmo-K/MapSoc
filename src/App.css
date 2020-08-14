@@ -5,6 +5,5 @@
 }
 
 .main-container {
-  height: calc(100% - 44px);
-  margin-top: 44px;
+  height: 100%;
 }

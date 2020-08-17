@@ -16,3 +16,9 @@ body {
 *::after {
   box-sizing: inherit;
 }
+
+button, button:active, button:hover, button:focus {
+  border: none;
+  outline: none;
+  background: none;
+}

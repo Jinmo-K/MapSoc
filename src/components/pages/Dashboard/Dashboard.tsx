@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import forceLink from 'react-force-graph-2d'
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
+import { GraphNode } from '../../../types';
+import { graphConstants } from '../../../constants';
 
 import { ContextMenu } from '../../../components';
 import Toolbar from './Toolbar';
@@ -22,7 +24,6 @@ interface IDashboardState {
   zoomAmount: number;
   currentTool: string;
   currentNode: GraphNode | null;
-  isEditingNewNode: boolean;
   hoveredNode: GraphNode | null;
   isAddingLink: boolean;
   hasClickBeenHandled: boolean;
@@ -34,12 +35,6 @@ interface IDashboardState {
 interface Data extends GraphData {
   nodeSequence: number;
   nodes: GraphNode[];
-}
-
-export type GraphNode = NodeObject & {
-  name?: string;
-  color?: string;
-  neighbours?: Set<string | number>;
 }
 
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
@@ -58,7 +53,6 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     zoomAmount: 0,
     currentTool: 'pointer',
     currentNode: null,
-    isEditingNewNode: false,
     hoveredNode: null,
     isAddingLink: false,
     hasClickBeenHandled: true,
@@ -190,7 +184,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
 
   handleNodePencilClick = (node: GraphNode) => {
     if (this.state.isAddingLink) {
-      if (!node.neighbours?.has(this.state.currentNode!.id!)) {
+      if (!node.neighbours?.has(this.state.currentNode!.id!) && node !== this.state.currentNode) {
         this.addLink(this.state.currentNode!.id!, node.id!);
         this.setState({ currentNode: null })
       }
@@ -259,11 +253,18 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     // Translate to node canvas position
     let {x: fx, y: fy} = this.graph.current.screen2GraphCoords(originX, originY)
     // Create new default node
-    let newNode = {
+    let newNode: GraphNode = {
       id: this.state.data.nodeSequence,
       name: "",
-      neighbours: new Set<string | number>()
-    }
+      neighbours: new Set<string | number>(),
+      groups: [],
+      isGroup: false,
+      notes: '',
+      style: {
+        color: graphConstants.DEFAULT_NODE_COLOR,
+        size: graphConstants.DEFAULT_NODE_SIZE
+      }
+    };
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });
     // Add it to the list of nodes
@@ -279,20 +280,38 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       },
       shouldPreventZoom: true,
       currentNode: node,
-      isEditingNewNode: true
     }));
   }
 
-  deleteNode = (node: GraphNode) => {
+  deleteNode = (toDeleteNode: GraphNode) => {
     this.setState(prevState => {
-      let nextNodes = prevState.data.nodes.filter(n => n !== node);
-      let nextLinks = prevState.data.links.filter(link => link.source !== node && link.target !== node);
+      let currentNode = prevState.currentNode;
+      // Delete the node
+      let nextNodes = prevState.data.nodes.filter(n => n !== toDeleteNode);
+      // If the node is a group, go through its neighbours and remove it from their 'groups'
+      if (toDeleteNode.isGroup) {
+        let neighbours = toDeleteNode.neighbours;
+        nextNodes.forEach(node => {
+          if (neighbours!.has(node.id as string)) {
+            // The node is a neighbour of the group node, so update its groups list
+            node.groups = node.groups!.filter(groupId => groupId !== toDeleteNode.id);
+            // If it is also the currently inspected node, update it
+            if (currentNode === node) {
+              currentNode = node;
+            }
+          }
+        });
+      }
+      // Delete all links involving the node
+      let nextLinks = prevState.data.links.filter(link => link.source !== toDeleteNode && link.target !== toDeleteNode);
       return {
           data: {
             ...prevState.data,
             nodes: nextNodes,
-            links: nextLinks
+            links: nextLinks,
           },
+          currentNode: currentNode === toDeleteNode ? null : currentNode,
+          hoveredNode: null,
           shouldPreventZoom: true
       }
     });
@@ -309,43 +328,33 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     this.graph.current.d3ReheatSimulation();
   }
 
-  handleNewNodeNameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    let nodes = [...this.state.data.nodes];
-    nodes[this.state.data.nodes.length - 1].name = e.currentTarget.value;
-    this.setState(prevState => ({
-      data: {
-        ...prevState.data,
-        nodes
-      }
-    }));
-  }
-
   drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
-    if (!this.state.ctx) this.setState({ ctx })
-    const label = node.name as string;
+    if (!this.state.ctx) this.setState({ ctx });
+    const nodeStyle = node.style || {};
+
+    // Draw the label
+    const label = node.label || node.name || '';
     const fontSize = 12;
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(label).width;
     const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillRect(node.x! - bckgDimensions[0] / 2, node.y! - bckgDimensions[1] / 2, ...bckgDimensions as [number, number]);
-
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = node.color!;
-    ctx.fillText(label, node.x!, node.y!);
+    ctx.textBaseline = 'top'
+    ctx.fillStyle = nodeStyle.color!;
+    ctx.fillText(label, node.x!, node.y! + 5);
   
-    if (node === this.state.hoveredNode) {
+    // Highlight the node if it is being hovered
+    if ([this.state.hoveredNode, this.state.currentNode].includes(node)) {
       ctx.beginPath();
-      ctx.arc(node.x!, node.y!, 4 * 1.4, 0, 2 * Math.PI, false);
-      ctx.fillStyle = 'rgba(255, 188, 71, 0.7)';
+      ctx.arc(node.x!, node.y!, nodeStyle.size! + 3, 0, 2 * Math.PI, false);
+      ctx.fillStyle = graphConstants.HIGHLIGHT_NODE_COLOR;
       ctx.fill();
     }
+    // Light highlighting of neighbours of hovered node
     else if (this.state.hoveredNode?.neighbours?.has(node.id!)) {
       ctx.beginPath();
-      ctx.arc(node.x!, node.y!, 4 * 1.4, 0, 2 * Math.PI, false);
-      ctx.fillStyle = 'rgba(255, 150, 71, 0.2)';
+      ctx.arc(node.x!, node.y!, nodeStyle.size! + 3, 0, 2 * Math.PI, false);
+      ctx.fillStyle = graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR;
       ctx.fill();
     }
 
@@ -353,6 +362,21 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     if (node === this.state.currentNode && this.state.isAddingLink) {
       this.drawNewLink(ctx, node.x!, node.y!);
     }
+
+    // Draw main node shape, either default circle or icon
+    if (nodeStyle.icon) {
+
+    }
+    else {
+      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size!, nodeStyle.color!)
+    }
+  }
+
+  drawCircle = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) => {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+    ctx.fillStyle = color;
+    ctx.fill();
   }
 
   addLink = (source: string | number, target: string | number) => {
@@ -411,7 +435,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       onNodeClick: this.onNodeClick,
       onNodeHover: this.onNodeHover,
       nodeCanvasObject: this.drawNode,
-      nodeCanvasObjectMode: () => 'before',
+      nodeCanvasObjectMode: () => 'replace',
       linkWidth: 4,
       // onLinkHover: this.onLinkHover,
       // onLinkClick: this.onLinkClick,
@@ -435,22 +459,6 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
         }
         {this.state.currentNode 
           &&  <Details {...detailsProps} /> 
-        }
-        {this.state.isEditingNewNode 
-          &&  <input 
-                id='new-node-name-input'
-                autoFocus
-                type='text' 
-                onChange={this.handleNewNodeNameChange}
-                onBlur={() => this.setState({ isEditingNewNode: false })}
-                onKeyUp={(e) => {
-                  if (e.keyCode == 13) {
-                    this.setState({ isEditingNewNode: false })
-                  }
-                }}
-                style={{position: 'absolute', opacity: 0}}
-                autoComplete='off'
-              />
         }
         <Toolbar selectTool={this.selectTool} />
         <section 

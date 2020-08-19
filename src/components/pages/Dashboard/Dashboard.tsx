@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import forceLink from 'react-force-graph-2d'
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
-import { GraphNode } from '../../../types';
+import { GraphNode, Graph } from '../../../types';
 import { graphConstants } from '../../../constants';
 
 import { ContextMenu } from '../../../components';
@@ -18,7 +18,7 @@ interface IDashboardProps {
 // TODO: adding hoveredObject, inspectedObject..
 interface IDashboardState {
   showContextMenu: boolean;
-  data: Data;
+  data: Graph;
   nodeClicks: number;
   shouldPreventZoom: boolean;
   zoomAmount: number;
@@ -32,11 +32,6 @@ interface IDashboardState {
   ctx: CanvasRenderingContext2D | null;
 }
 
-interface Data extends GraphData {
-  nodeSequence: number;
-  nodes: GraphNode[];
-}
-
 export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   private graph = React.createRef() as React.MutableRefObject<ForceGraphMethods>;
   private contextMenu = React.createRef<HTMLDivElement>();
@@ -44,6 +39,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
   readonly state: IDashboardState = {
     showContextMenu: false,
     data: {
+      id: testdata.id,
       nodes: testdata.nodes,
       links: testdata.links,
       nodeSequence: testdata.nodeSequence
@@ -276,7 +272,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       data: {
         ...prevState.data,
         nodes: [...prevState.data.nodes, node],
-        nodeSequence: prevState.data.nodeSequence + 1
+        nodeSequence: prevState.data.nodeSequence! + 1
       },
       shouldPreventZoom: true,
       currentNode: node,

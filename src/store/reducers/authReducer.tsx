@@ -10,7 +10,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   errors: {},
-  isLoggedIn: false,
+  isLoggedIn: true,
   user: {},
 };
 

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation, Switch } from 'react-router-dom';
 
 import { RootState } from './store/reducers';
+import { loadTestGraph } from './store/actions';
 import { Navbar } from './components';
 
 import './App.css';
@@ -12,8 +13,12 @@ interface IAppProps extends PropsFromRedux {
   children: JSX.Element
 }
 
-const App: React.FC<IAppProps> = ({ auth, children }) => {
+const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph }) => {
   const location = useLocation();
+
+  useEffect(() => {
+    loadTestGraph();
+  }, [auth.isLoggedIn, loadTestGraph])
 
   return (
     <div id='app'>
@@ -40,6 +45,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = {
+  loadTestGraph,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

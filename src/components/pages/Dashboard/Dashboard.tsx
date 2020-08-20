@@ -1,11 +1,13 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import forceLink from 'react-force-graph-2d'
+import { connect, ConnectedProps } from 'react-redux';
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
+
+import { addLink, addNode, deleteNode } from '../../../store/actions';
+
 import { GraphNode, Graph } from '../../../types';
 import { graphConstants } from '../../../constants';
-
+import { RootState } from '../../../store/reducers';
 import { ContextMenu } from '../../../components';
 import Toolbar from './Toolbar';
 import Details from './Details';
@@ -13,12 +15,11 @@ import Details from './Details';
 import './Dashboard.css';
 import testdata from '../../../test_data';
 
-interface IDashboardProps {
+interface IDashboardProps extends PropsFromRedux{
 }
 // TODO: adding hoveredObject, inspectedObject..
 interface IDashboardState {
   showContextMenu: boolean;
-  data: Graph;
   nodeClicks: number;
   shouldPreventZoom: boolean;
   zoomAmount: number;
@@ -32,18 +33,12 @@ interface IDashboardState {
   ctx: CanvasRenderingContext2D | null;
 }
 
-export class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
+class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   private graph = React.createRef() as React.MutableRefObject<ForceGraphMethods>;
   private contextMenu = React.createRef<HTMLDivElement>();
   private details = React.createRef<HTMLDivElement>();
   readonly state: IDashboardState = {
     showContextMenu: false,
-    data: {
-      id: testdata.id,
-      nodes: testdata.nodes,
-      links: testdata.links,
-      nodeSequence: testdata.nodeSequence
-    },
     nodeClicks: 0,
     shouldPreventZoom: false,
     zoomAmount: 0,
@@ -135,6 +130,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
    * @param {React.MouseEvent} e  Mouse right click event
    */
   onRightClick = (e: React.MouseEvent) => {
+    console.log(this.state.currentNode)
     e.preventDefault();
     let y = e.clientY;
     let x = e.clientX;
@@ -250,7 +246,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     let {x: fx, y: fy} = this.graph.current.screen2GraphCoords(originX, originY)
     // Create new default node
     let newNode: GraphNode = {
-      id: this.state.data.nodeSequence,
+      id: this.props.graph.data.nodeSequence,
       name: "",
       neighbours: new Set<string | number>(),
       groups: [],
@@ -264,48 +260,30 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });
     // Add it to the list of nodes
-    this.pushNode(newNode);
+    this.props.addNode(this.props.graph.data.id as string, newNode);
+    this.setState({
+      shouldPreventZoom: true,
+      currentNode: newNode,
+    });
   }
 
   pushNode = (node: GraphNode) => {
     this.setState(prevState => ({
-      data: {
-        ...prevState.data,
-        nodes: [...prevState.data.nodes, node],
-        nodeSequence: prevState.data.nodeSequence! + 1
-      },
+      // data: {
+      //   ...prevState.data,
+      //   nodes: [...prevState.data.nodes, node],
+      //   nodeSequence: prevState.data.nodeSequence! + 1
+      // },
       shouldPreventZoom: true,
       currentNode: node,
     }));
   }
 
   deleteNode = (toDeleteNode: GraphNode) => {
+    this.props.deleteNode(this.props.graph.data.id as string, toDeleteNode);
     this.setState(prevState => {
       let currentNode = prevState.currentNode;
-      // Delete the node
-      let nextNodes = prevState.data.nodes.filter(n => n !== toDeleteNode);
-      // If the node is a group, go through its neighbours and remove it from their 'groups'
-      if (toDeleteNode.isGroup) {
-        let neighbours = toDeleteNode.neighbours;
-        nextNodes.forEach(node => {
-          if (neighbours!.has(node.id as string)) {
-            // The node is a neighbour of the group node, so update its groups list
-            node.groups = node.groups!.filter(groupId => groupId !== toDeleteNode.id);
-            // If it is also the currently inspected node, update it
-            if (currentNode === node) {
-              currentNode = node;
-            }
-          }
-        });
-      }
-      // Delete all links involving the node
-      let nextLinks = prevState.data.links.filter(link => link.source !== toDeleteNode && link.target !== toDeleteNode);
       return {
-          data: {
-            ...prevState.data,
-            nodes: nextNodes,
-            links: nextLinks,
-          },
           currentNode: currentNode === toDeleteNode ? null : currentNode,
           hoveredNode: null,
           shouldPreventZoom: true
@@ -327,7 +305,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
   drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     if (!this.state.ctx) this.setState({ ctx });
     const nodeStyle = node.style || {};
-
+    
     // Draw the label
     const label = node.label || node.name || '';
     const fontSize = 12;
@@ -340,7 +318,7 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     ctx.fillText(label, node.x!, node.y! + 5);
   
     // Highlight the node if it is being hovered
-    if ([this.state.hoveredNode, this.state.currentNode].includes(node)) {
+    if ([this.state.hoveredNode?.id, this.state.currentNode?.id].includes(node.id)) {
       ctx.beginPath();
       ctx.arc(node.x!, node.y!, nodeStyle.size! + 3, 0, 2 * Math.PI, false);
       ctx.fillStyle = graphConstants.HIGHLIGHT_NODE_COLOR;
@@ -380,23 +358,23 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
       source, 
       target
     };
-    this.pushLink(newLink);
+    this.props.addLink(this.props.graph.data.id as string, newLink)
   }
 
   pushLink = (link: LinkObject) => {
     // Add each node to the other's set of neighbours
-    let nextNodes = [...this.state.data.nodes];
-    let [nodeA, nodeB] = nextNodes.filter(node => node.id === link.source || node.id === link.target);
-    nodeA.neighbours!.add(nodeA.id === link.source ? link.target as string : link.source as string);
-    nodeB.neighbours!.add(nodeB.id === link.source ? link.target as string : link.source as string)
+    // let nextNodes = [...this.state.data.nodes];
+    // let [nodeA, nodeB] = nextNodes.filter(node => node.id === link.source || node.id === link.target);
+    // nodeA.neighbours!.add(nodeA.id === link.source ? link.target as string : link.source as string);
+    // nodeB.neighbours!.add(nodeB.id === link.source ? link.target as string : link.source as string)
 
-    this.setState(prevState => ({
-      data: {
-        ...prevState.data,
-        links: [...prevState.data.links, link],
-        nodes: nextNodes
-      }
-    }));
+    // this.setState(prevState => ({
+    //   data: {
+    //     ...prevState.data,
+    //     links: [...prevState.data.links, link],
+    //     nodes: nextNodes
+    //   }
+    // }));
   }
 
   drawNewLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {
@@ -420,10 +398,10 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     }
     const detailsProps = {
       ref: this.details,
-      node: {...this.state.currentNode}
+      node: {...this.state.currentNode!}
     }
     const graphProps: ForceGraphProps = { 
-      graphData: this.state.data,
+      graphData: this.props.graph.data,
       nodeAutoColorBy: "group",
       onBackgroundClick: this.onBackgroundClick,
       onNodeDrag: this.onNodeDrag,
@@ -468,3 +446,20 @@ export class Dashboard extends React.Component<IDashboardProps, IDashboardState>
     );
   }
 }
+
+const mapStateToProps = (state: RootState) => ({
+  auth: state.auth,
+  graph: state.graph,
+});
+
+const mapDispatchToProps = {
+  addLink,
+  addNode,
+  deleteNode,
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+export default connector(Dashboard);

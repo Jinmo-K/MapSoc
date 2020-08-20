@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux';
 import authReducer from './authReducer'
-import saveReducer from './saveReducer';
+import graphReducer from './graphReducer';
 
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  save: saveReducer,
+  graph: graphReducer,
 });
 
 export default rootReducer;

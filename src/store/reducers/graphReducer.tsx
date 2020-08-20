@@ -23,13 +23,17 @@ const initialState: GraphState = {
   neighbours: {},
 };
 
+// *Some state must be mutated (eg. nodes and links), which is a consequence of using d3
 export default (state = initialState, action: GraphAction): GraphState => {
-  let nextState = {...state};
+  let nextState = {...state, data: {...state.data}};
 
   switch(action.type) {
 
     case graphConstants.ADD_LINK:
-      nextState.data.links.push(action.link);
+      nextState.data = {
+        ...state.data,
+        links: [...state.data.links, action.link]
+      }
       // Add each node to the other's neighbours list
       let [nodeA, nodeB] = nextState.data.nodes.filter(node => node.id === action.link.source || node.id === action.link.target);
       nextState.neighbours![nodeA.id!].add(nodeB);
@@ -86,10 +90,11 @@ export default (state = initialState, action: GraphAction): GraphState => {
       };
     
     case graphConstants.GET_GRAPH_SUCCESS:
-      nextState.data = action.graph;
-      // Create the node index
+      nextState.data = {...action.graph}
+      // Create the node index and initialize adjacency list
       for (let node of nextState.data.nodes) {
         nextState.idToNode[node.id!] = node;
+        nextState.neighbours[node.id!] = new Set<GraphNode>();
       }
       // Create the adjacency list (currently all undirected links)
       for (let link of nextState.data.links) {
@@ -98,7 +103,7 @@ export default (state = initialState, action: GraphAction): GraphState => {
       }
       return {
         ...nextState,
-        isLoading: false,
+        isLoading: true,
       };
 
     case graphConstants.UPDATE_GRAPH_BEGIN:
@@ -125,7 +130,7 @@ export default (state = initialState, action: GraphAction): GraphState => {
         ...state,
         data: {
           ...state.data,
-          nodes: state.data.nodes.map(node => node.id === action.node.id ? action.node : node)
+          nodes: state.data.nodes.map(node => node.id === action.node.id ? Object.assign(node, action.node) : node)
         }
       };
 

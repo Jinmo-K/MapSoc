@@ -2,13 +2,15 @@ import { AppThunk } from '../store';
 import { GraphNode, Graph, GraphLink } from '../../types';
 import { graphService } from '../../services';
 import { graphConstants } from '../../constants';
-import { addUserActivity, flushActivityQueue } from './saveActions';
+
+import testdata from '../../test_data';
 
 export {
   addLink,
   addNode,
   deleteNode,
   getGraph,
+  loadTestGraph,
   saveNode,
   updateGraph,
   updateNode,
@@ -156,21 +158,20 @@ const updateNodeAction = (node: GraphNode): GraphAction => ({
 
 const addLink = (graphId: string, link: GraphLink): AppThunk => (dispatch) => {
   dispatch(addLinkAction(link));
-  dispatch(addUserActivity(() => graphService.addLink(graphId, link)));
+  graphService.addLink(graphId, link)
+    .catch(console.log);
 };
 
 const addNode = (graphId: string, node: GraphNode): AppThunk => (dispatch) => {
-  // Update the graph
   dispatch(addNodeAction(node));
-  // Add the http request to the save queue
-  dispatch(addUserActivity(() => graphService.addNode(graphId, node)));
+  graphService.addNode(graphId, node)
+    .catch(console.log);
 };
 
 const deleteNode = (graphId: string, node: GraphNode): AppThunk => (dispatch) => {
-  // Update the graph
   dispatch(deleteNodeAction(node));
-  // Add the http request to the save queue
-  dispatch(addUserActivity(() => graphService.deleteNode(graphId, node)));
+  graphService.deleteNode(graphId, node)
+    .catch(console.log);
 };
 
 const getGraph = (graphId: string): AppThunk => (dispatch) => {
@@ -182,12 +183,17 @@ const getGraph = (graphId: string): AppThunk => (dispatch) => {
     .catch(console.log);
 };
 
+/**
+ * For testing only. Loads the test data
+ */
+const loadTestGraph = (): AppThunk => (dispatch) => {
+  dispatch(getGraphSuccess(testdata))
+}
+
 const updateGraph = (data: Graph): AppThunk => (dispatch) => {
   dispatch(updateGraphBegin());
   graphService.updateGraph(data)
     .then(() => {
-      // Flush the pending user activity save calls
-      dispatch(flushActivityQueue());
       dispatch(updateGraphSuccess(data));
     })
     .catch(console.log);
@@ -198,7 +204,7 @@ const updateGraph = (data: Graph): AppThunk => (dispatch) => {
  * @param node  The node's updated values
  */
 const updateNode = (node: GraphNode): AppThunk => (dispatch) => {
-  dispatch(updateNode(node));
+  dispatch(updateNodeAction(node));
 }
 
 /**

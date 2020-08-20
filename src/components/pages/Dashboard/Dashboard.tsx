@@ -130,7 +130,6 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
    * @param {React.MouseEvent} e  Mouse right click event
    */
   onRightClick = (e: React.MouseEvent) => {
-    console.log(this.state.currentNode)
     e.preventDefault();
     let y = e.clientY;
     let x = e.clientX;

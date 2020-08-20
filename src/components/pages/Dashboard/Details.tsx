@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
 import { RootState } from '../../../store/reducers';
-import { updateNode } from '../../../store/actions';
+import { updateNode, saveNode } from '../../../store/actions';
 import { GraphNode } from '../../../types';
 
 import './Details.css';
@@ -12,13 +12,19 @@ interface DetailsProps extends PropsFromRedux {
   node: GraphNode;
 }
 
-const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({ node, nodeIndex, updateNode }, ref) => {
+const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({ graphId, node, nodeIndex, updateNode, saveNode}, ref) => {
   const [name, setName] = useState(node.name);
   const [isEditingName, setIsEditingName] = useState(!node.name);
   const [size, setSize] = useState(node.style!.size!.toString());
   const [color, setColor] = useState(node.style!.color);
   const [notes, setNotes] = useState(node.notes!);
   const originalNode = useRef<GraphNode>({...node, style: {...node.style}});
+
+  const createNextNode = (): GraphNode => {
+    // Get the node's current state from the index 
+    let currentNode = nodeIndex[node.id!];
+    return {...currentNode, style: {...currentNode.style!}};
+  }
 
   const handleInputReturnKey = (e: React.KeyboardEvent) => {
     if (e.keyCode === 13) {
@@ -29,14 +35,13 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
     }
   };
   
+  /**
+   * Revert node back to original state when the panel was opened
+   */
   const handleCancelClick = () => {
     load(originalNode.current);
-    // Load all original properties
     updateNode(originalNode.current);
-  };
-
-  const handleSaveClick = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    saveNode(graphId as string, originalNode.current);
   };
 
   const hasNewValues = (): boolean => {
@@ -62,37 +67,44 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
 
   const onNameBlur = () => {
     setIsEditingName(false);
-    console.log('on blur')
+    let nextNode = createNextNode();
+    saveNode(graphId as string, Object.assign(nextNode, { name }));
   };
+
+  const onNotesBlur = () => {
+    let nextNode = createNextNode();
+    saveNode(graphId as string, Object.assign(nextNode, { notes }));
+  }
   
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let field = e.currentTarget.id;
     let value = e.currentTarget.value;
-    // Get the node's current state from the index 
-    let currentNode = nodeIndex[node.id!];
-    // The next steps are equivalent to mutating the node itself, a consequence of using d3
-    let updatedNode = {...currentNode, style: {...currentNode.style!}};
+    // The next steps will mutate the node itself, a consequence of using d3
+    let updatedNode = createNextNode();
 
-    switch(field) {
-      case 'name':
+    if (['name', 'notes'].includes(field)) {
+      if (field === 'name') {
         setName(value);
         updatedNode.name = value;
-        break;
-      case 'notes':
+      }
+      else {
         setNotes(value);
         updatedNode.notes = value;
-        break;
-      case 'size':
+      }
+    }
+    else if (['size', 'color'].includes(field)) {
+      if (field === 'size') {
         setSize(value);
         updatedNode.style!.size = parseInt(value);
-        break;
-      case 'color':
+      }
+      else {
         setColor(value);
         updatedNode.style!.color = value;
-        break;
-      default:
-        break;
+      }
+      // Save style changes to db immediately
+      saveNode(graphId as string, updatedNode);
     }
+    // Update the view
     updateNode(updatedNode);
   };
 
@@ -112,7 +124,7 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
   
   return (
     <div ref={ref} className='details'>
-      <form onSubmit={handleSaveClick} noValidate>
+      <form>
 
         {/* Name */}
         <h1>
@@ -179,11 +191,14 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
             />
           </div>
         </section>
+
+        {/* Notes */}
         <section className='details-notes'>
           <h2>Notes</h2>
           <textarea 
             id='notes'
             rows={17}
+            onBlur={onNotesBlur}
             onChange={onInputChange}
             value={notes}
           />
@@ -193,18 +208,11 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
         {(hasNewValues())
           &&  <div id='details-update-btns'>
                 <button 
-                  id='details-save-btn' 
-                  className='details-btn'
-                  type='submit'
-                >
-                    SAVE
-                </button>
-                <button 
-                  id='details-cancel-btn' 
+                  id='details-undo-btn' 
                   className='details-btn'
                   onClick={handleCancelClick}
                 >
-                  CANCEL
+                  UNDO CHANGES
                 </button>
               </div>
         }
@@ -214,12 +222,13 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-  auth: state.auth,
+  graphId: state.graph.data.id,
   nodeIndex: state.graph.idToNode,
 });
 
 const mapDispatchToProps = {
   updateNode,
+  saveNode,
 };
 
 const connector = connect(
@@ -237,7 +246,10 @@ export default connector(React.memo(
     let prevNode = prevProps.node as GraphNode;
     let nextNode = nextProps.node as GraphNode;
     return (
-      prevNode.id === nextNode.id && prevNode.groups!.length === nextNode.groups!.length
+      prevNode.id === nextNode.id && 
+      prevNode.groups!.length === nextNode.groups!.length &&
+      prevNode.name === nextNode.name &&
+      prevNode.notes === nextNode.notes
     )
   }
 ));

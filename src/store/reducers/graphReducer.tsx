@@ -126,13 +126,22 @@ export default (state = initialState, action: GraphAction): GraphState => {
       };
 
     case graphConstants.UPDATE_NODE:
-      return {
-        ...state,
-        data: {
-          ...state.data,
-          nodes: state.data.nodes.map(node => node.id === action.node.id ? Object.assign(node, action.node) : node)
-        }
-      };
+      let toUpdateNode = nextState.idToNode[action.node.id as string];
+      // If isGroup changes, need to update neighbours 
+      if (toUpdateNode.isGroup !== action.node.isGroup) {
+        nextState.neighbours[toUpdateNode.id as string].forEach(neighbour => {
+          // Node is now a group node, so add it to every non-group neighbour's group list
+          if (action.node.isGroup && !neighbour.isGroup) {
+            neighbour.groups!.push(action.node.id as string);
+          }
+          else { 
+            neighbour.groups = neighbour.groups!.filter(id => id !== action.node.id);
+          }
+        });
+      }
+      // Update the node's values
+      Object.assign(toUpdateNode, action.node);
+      return nextState;
 
     default:
       return state;

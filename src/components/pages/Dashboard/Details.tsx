@@ -15,6 +15,7 @@ interface DetailsProps extends PropsFromRedux {
 const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({ graphId, node, nodeIndex, updateNode, saveNode}, ref) => {
   const [name, setName] = useState(node.name);
   const [isEditingName, setIsEditingName] = useState(!node.name);
+  const [isGroup, setIsGroup] = useState(node.isGroup);
   const [size, setSize] = useState(node.style!.size!.toString());
   const [color, setColor] = useState(node.style!.color);
   const [notes, setNotes] = useState(node.notes!);
@@ -34,7 +35,7 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
       }
     }
   };
-  
+
   /**
    * Revert node back to original state when the panel was opened
    */
@@ -48,6 +49,7 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
     let original = originalNode.current;
     return (
       name !== original.name || 
+      isGroup !== original.isGroup ||
       size !== original.style!.size!.toString() || 
       color !== original.style!.color || 
       notes !== original.notes
@@ -59,6 +61,7 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
     originalNode.current = {...node, style: {...node.style}};
     removePositionProps(originalNode.current);
     setName(node.name);
+    setIsGroup(node.isGroup);
     setIsEditingName(!node.name);
     setSize(node.style!.size!.toString());
     setColor(node.style!.color!);
@@ -92,16 +95,20 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
         updatedNode.notes = value;
       }
     }
-    else if (['size', 'color'].includes(field)) {
+    // These changes will be saved to db immediately
+    else if (['size', 'color', 'isGroup'].includes(field)) {
       if (field === 'size') {
         setSize(value);
         updatedNode.style!.size = parseInt(value);
       }
-      else {
+      else if (field === 'color') {
         setColor(value);
         updatedNode.style!.color = value;
       }
-      // Save style changes to db immediately
+      else if (field === 'isGroup') {
+        setIsGroup(!isGroup);
+        updatedNode.isGroup = !isGroup;
+      }
       saveNode(graphId as string, updatedNode);
     }
     // Update the view
@@ -163,6 +170,19 @@ const Details: React.ForwardRefRenderFunction<HTMLDivElement, DetailsProps> = ({
                 }
               </p>
         }
+
+        {/* Is group */}
+        <div className='details-form-control'>
+            <label htmlFor='isGroup'>Group</label>
+            <input 
+              id='isGroup'
+              type="checkbox" 
+              checked={isGroup!}
+              // value={isGroup ? 'on' : 'off'}
+              onChange={onInputChange}
+            />
+            <span />
+          </div>
 
         {/* Style */}
         <section className='details-style'>

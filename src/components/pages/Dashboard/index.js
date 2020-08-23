@@ -1,2 +1,1 @@
-export * from './Dashboard';
-export * from './Details';
+export {default as Dashboard} from './Dashboard';

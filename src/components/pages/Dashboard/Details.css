@@ -43,7 +43,7 @@
   transform: scale(1.03);
 }
 
-#details-save-btn {
+#details-undo-btn {
   border: 3px solid #408ab8;
 }
 
@@ -56,7 +56,7 @@
 
 .details h1 {
   font-size: 23px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .details h2 {
@@ -72,4 +72,10 @@
   font-size: inherit;
   font-weight: bold;
   max-width: 100%;
+}
+
+.details-groups {
+  font-size: 14px;
+  color: rgb(34, 34, 34);
+  font-weight: 300;
 }

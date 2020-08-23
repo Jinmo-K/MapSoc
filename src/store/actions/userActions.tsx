@@ -12,13 +12,13 @@ export {
 /* ------------------------------ Action Types ------------------------------ */
 
 interface IUpdateUserFailureAction {
-  type: typeof userConstants.UPDATE_USER_FAILURE,
-  errors: Record<string, string>
+  type: typeof userConstants.UPDATE_USER_FAILURE;
+  errors: Record<string, string>;
 }
 
 interface IUpdateUserSuccessAction {
-  type: typeof userConstants.UPDATE_USER_SUCCESS,
-  user: IUser
+  type: typeof userConstants.UPDATE_USER_SUCCESS;
+  user: IUser;
 }
 
 export type UserAction = IUpdateUserFailureAction | IUpdateUserSuccessAction;

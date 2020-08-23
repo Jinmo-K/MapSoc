@@ -15,17 +15,17 @@ export {
 /* ------------------------------ Action Types ------------------------------ */
 
 interface ILoginFailureAction {
-  type: typeof userConstants.LOGIN_FAILURE,
-  errors: Record<string, string>
+  type: typeof userConstants.LOGIN_FAILURE;
+  errors: Record<string, string>;
 }
 
 interface ILoginSuccessAction {
-  type: typeof userConstants.LOGIN_SUCCESS,
-  user: IUser
+  type: typeof userConstants.LOGIN_SUCCESS;
+  user: IUser;
 }
 
 interface ILogoutAction {
-  type: typeof userConstants.LOGOUT
+  type: typeof userConstants.LOGOUT;
 }
 
 export type AuthAction = ILoginSuccessAction | ILoginFailureAction | ILogoutAction;

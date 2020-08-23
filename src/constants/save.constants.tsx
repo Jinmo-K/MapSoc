@@ -1,0 +1,4 @@
+export const saveConstants = {
+  ADD_USER_ACTIVITY: 'ADD_USER_ACTIVITY',
+  FLUSH_ACTIVITY_QUEUE: 'FLUSH_ACTIVITY_QUEUE',
+} as const;

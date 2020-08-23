@@ -21,4 +21,10 @@
   width: 30px;
   height: 500px;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.toolbar-btn-selected, .toolbar-btn-selected:hover, .toolbar-btn-selected:focus {
+  background: rgb(191, 191, 191);
+  border-radius: 2px;
 }

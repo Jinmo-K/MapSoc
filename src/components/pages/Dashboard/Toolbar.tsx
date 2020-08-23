@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import './Toolbar.css';
 
@@ -13,7 +13,16 @@ const tools = [
   'selection',
 ];
 
+const icons: Record<string, JSX.Element> = {
+  'pointer': <i className='fas fa-mouse-pointer' />,
+  'pencil': <i className='fas fa-pencil-alt' />,
+  'eraser': <i className='fas fa-eraser' />,
+  'selection': <i className='fas fa-vector-square' />
+}
+
 const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
+  const [currentTool, setCurrentTool] = useState('pointer');
+
   return (
     <section className='toolbar'>
       {
@@ -23,10 +32,14 @@ const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
               id={tool + '-btn'} 
               key={tool}
               name={tool}
-              className='btn toolbar-btn'
-              onClick={() => selectTool(tool)}
+              className={currentTool === tool ? 'btn toolbar-btn toolbar-btn-selected' : 'btn toolbar-btn'}
+              onClick={() => {
+                setCurrentTool(tool);
+                selectTool(tool);
+              }}
+              title={tool}
             >
-              {tool}
+              {icons[tool]}
             </button>
           )
         })

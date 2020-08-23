@@ -3,16 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GraphNode } from '../../../types';
 
 
-import { AppThunk } from '../../../store';
-
-
 interface IDetailsProps {
   graphId: number;
   node: GraphNode;
   nodeIndex: Record<string, GraphNode>;
   saveNode: (graphId: number, node: GraphNode) => void;
   updateNode: (node: GraphNode) => void;
-
 }
 
 const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, updateNode, saveNode}) => {

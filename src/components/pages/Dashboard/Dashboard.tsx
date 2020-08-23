@@ -100,6 +100,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
    * @param e The click event
    */
   onClick = (e: React.MouseEvent) => {
+    console.log(this.state.currentNodeOrLink )
     this.setState({ hasClickBeenHandled: false });
     let isMenuClick = this.isContextMenuClick(e);
     // Close context menu if it's open and user clicks outside of it
@@ -282,7 +283,8 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       style: {
         color: graphConstants.DEFAULT_NODE_COLOR,
         size: graphConstants.DEFAULT_NODE_SIZE
-      }
+      },
+      type: 'node',
     };
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });

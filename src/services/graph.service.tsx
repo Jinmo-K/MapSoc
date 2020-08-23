@@ -16,14 +16,14 @@ export const graphService = {
 
 /* ---------------------------------- Nodes --------------------------------- */
 
-const getGraphNodesEndpoint = (graphId: string) => graphConstants.GRAPHS_ENDPOINT + graphId + '/nodes/';
+const getGraphNodesEndpoint = (graphId: number) => graphConstants.GRAPHS_ENDPOINT + graphId + '/nodes/';
 
 /**
  * Add a single node to a graph
  * @param graphId   The id of the graph
  * @param nodeData  The values of the node being added
  */
-function addNode(graphId: string, nodeData: GraphNode) {
+function addNode(graphId: number, nodeData: GraphNode) {
   return axios.post(getGraphNodesEndpoint(graphId), nodeData);
 }
 
@@ -32,7 +32,7 @@ function addNode(graphId: string, nodeData: GraphNode) {
  * @param graphId The id of the graph 
  * @param node  The node being removed
  */
-function deleteNode(graphId: string, node: GraphNode) {
+function deleteNode(graphId: number, node: GraphNode) {
   return axios.delete(getGraphNodesEndpoint(graphId) + node.id);
 }
 
@@ -41,24 +41,24 @@ function deleteNode(graphId: string, node: GraphNode) {
  * @param graphId   The id of the graph  
  * @param nodeData  The updated values of the node
  */
-function updateNode(graphId: string, nodeData: GraphNode) {
+function updateNode(graphId: number, nodeData: GraphNode) {
   return axios.put(getGraphNodesEndpoint(graphId) + nodeData.id, nodeData);
 }
 
 
 /* ---------------------------------- Links --------------------------------- */
 
-const getGraphLinksEndpoint = (graphId: string) => graphConstants.GRAPHS_ENDPOINT + graphId + '/links/';
+const getGraphLinksEndpoint = (graphId: number) => graphConstants.GRAPHS_ENDPOINT + graphId + '/links/';
 
-function addLink(graphId: string, link: GraphLink) {
+function addLink(graphId: number, link: GraphLink) {
   return axios.post(getGraphLinksEndpoint(graphId), link);
 }
 
-function deleteLink(graphId: string, link: GraphLink) {
+function deleteLink(graphId: number, link: GraphLink) {
   return axios.delete(getGraphLinksEndpoint(graphId) + link.id);
 }
 
-function updateLink(graphId: string, linkData: GraphLink) {
+function updateLink(graphId: number, linkData: GraphLink) {
   return axios.put(getGraphLinksEndpoint(graphId), linkData);
 }
 
@@ -69,7 +69,7 @@ function updateLink(graphId: string, linkData: GraphLink) {
  * Delete a user's graph
  * @param id The id of the graph
  */
-function deleteGraph(id: string) {
+function deleteGraph(id: number) {
   return axios.delete(graphConstants.GRAPHS_ENDPOINT + id);  
 }
 
@@ -77,7 +77,7 @@ function deleteGraph(id: string) {
  * Retrieves a user's graph
  * @param id The id of the graph
  */
-function getGraph(id: string) {
+function getGraph(id: number) {
   return axios.get(graphConstants.GRAPHS_ENDPOINT + id);
 }
 

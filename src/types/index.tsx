@@ -1,16 +1,18 @@
 import { NodeObject, LinkObject, GraphData } from "react-force-graph-2d";
 
 export interface IUser {
-  id?: string | number;
+  id?: number;
   name?: string;
   email?: string;
   password?: string;
 }
 
 export interface Graph extends GraphData {
-  id?: string | number;
+  id?: number;
   nodeSequence?: number;
   nodes: GraphNode[];
+  links: GraphLink[];
+  linkSequence?: number;
 }
 
 /* ---------------------------------- Nodes --------------------------------- */
@@ -22,20 +24,22 @@ export interface GraphNode extends NodeObject {
   label?: string;
   neighbours?: Set<string | number>;
   style?: GraphNodeStyle;
+  type?: 'node';
   notes?: string;
 }
 
 export interface GraphNodeStyle {
   color?: string;
   size?: number;
-  icon?: undefined; // todo
+  icon?: undefined;
 }
 
 /* ---------------------------------- Links --------------------------------- */
 
 export interface GraphLink extends LinkObject {
-  id?: string | number;
+  id?: number;
   style?: GraphLinkStyle;
+  type?: 'link';
   notes?: string;  
 }
 

@@ -1,10 +1,11 @@
-import { Graph, GraphNode } from '../../types';
+import { Graph, GraphLink, GraphNode } from '../../types';
 import { GraphAction } from '../actions';
 import { graphConstants } from '../../constants';
 
 
 interface GraphState {
   data: Graph;
+  idToLink: Record<string, GraphLink>;
   idToNode: Record<string, GraphNode>;
   isLoading: boolean;
   isUpdating: boolean;
@@ -15,8 +16,10 @@ const initialState: GraphState = {
   data: {
     nodes: [],
     links: [],
+    linkSequence: 0,
     nodeSequence: 0,
   },
+  idToLink: {},
   idToNode: {},
   isLoading: false,
   isUpdating: false,
@@ -47,6 +50,9 @@ export default (state = initialState, action: GraphAction): GraphState => {
         if (nodeA.isGroup) nodeB.groups!.push(nodeA.id as string);
         else if (nodeB.isGroup) nodeA.groups!.push(nodeB.id as string);
       }
+      // Add the new link to the index
+      nextState.idToLink[action.link.id!] = action.link;
+      nextState.data.linkSequence!++;
       return nextState;
 
     case graphConstants.ADD_NODE:
@@ -60,6 +66,21 @@ export default (state = initialState, action: GraphAction): GraphState => {
         idToNode: {...state.idToNode, [action.node.id!]: action.node},
         neighbours: {...state.neighbours, [action.node.id!]: new Set<GraphNode>()}
       };
+
+    case graphConstants.DELETE_LINK:
+      let toDeleteLink = action.link;
+      let source = toDeleteLink.source as GraphNode;
+      let target = toDeleteLink.target as GraphNode;
+      // Remove the link
+      nextState.data.links = state.data.links.filter(l => l !== toDeleteLink);
+      // Remove each node from the other's groups 
+      source.groups = source.groups!.filter(id => id !== target.id);
+      target.groups = target.groups!.filter(id => id !== source.id);
+      // Update the adjacency list
+      nextState.neighbours[target.id!].delete(source);
+      nextState.neighbours[source.id!].delete(target);
+      return nextState;
+      
 
     case graphConstants.DELETE_NODE:
       let toDeleteNode = action.node;
@@ -96,8 +117,9 @@ export default (state = initialState, action: GraphAction): GraphState => {
         nextState.idToNode[node.id!] = node;
         nextState.neighbours[node.id!] = new Set<GraphNode>();
       }
-      // Create the adjacency list (currently all undirected links)
+      // Create the link index and adjacency list (currently all undirected links)
       for (let link of nextState.data.links) {
+        nextState.idToLink[link.id!] = link;
         nextState.neighbours[link.source as string].add(nextState.idToNode[link.target as string]);  
         nextState.neighbours[link.target as string].add(nextState.idToNode[link.source as string]);
       }
@@ -124,6 +146,12 @@ export default (state = initialState, action: GraphAction): GraphState => {
         data: action.graph,
         isUpdating: false,
       };
+
+    case graphConstants.UPDATE_LINK:
+        // Find the link
+        let toUpdateLink = nextState.data.links.find(l => l.source === action.link.source && l.target === action.link.target);
+        Object.assign(toUpdateLink, action.link);
+        return nextState;
 
     case graphConstants.UPDATE_NODE:
       let toUpdateNode = nextState.idToNode[action.node.id as string];

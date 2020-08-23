@@ -3,29 +3,28 @@ import { connect, ConnectedProps } from 'react-redux';
 import { forceCollide } from 'd3';
 import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
 
-import { addLink, addNode, deleteNode } from '../../../store/actions';
+import { addLink, addNode, deleteLink, deleteNode } from '../../../store/actions';
 
-import { GraphNode, Graph } from '../../../types';
+import { GraphNode, GraphLink } from '../../../types';
 import { graphConstants } from '../../../constants';
 import { RootState } from '../../../store/reducers';
 import { ContextMenu } from '../../../components';
 import Toolbar from './Toolbar';
-import Details from './Details';
+import Details from './DetailsHOC';
 
 import './Dashboard.css';
-import testdata from '../../../test_data';
 
 interface IDashboardProps extends PropsFromRedux{
 }
-// TODO: adding hoveredObject, inspectedObject..
+
 interface IDashboardState {
   showContextMenu: boolean;
   nodeClicks: number;
   shouldPreventZoom: boolean;
   zoomAmount: number;
   currentTool: string;
-  currentNode: GraphNode | null;
-  hoveredNode: GraphNode | null;
+  currentNodeOrLink: GraphNode | GraphLink | null;
+  hoveredObject: GraphNode | GraphLink | null;
   isAddingLink: boolean;
   hasClickBeenHandled: boolean;
   mouseX: number;
@@ -43,8 +42,8 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     shouldPreventZoom: false,
     zoomAmount: 0,
     currentTool: 'pointer',
-    currentNode: null,
-    hoveredNode: null,
+    currentNodeOrLink: null,
+    hoveredObject: null,
     isAddingLink: false,
     hasClickBeenHandled: true,
     mouseX: 0,
@@ -62,6 +61,23 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 
   closeContextMenu = () => {
     this.setState({ showContextMenu: false });
+  }
+
+  deleteLink = (toDeleteLink: GraphLink) => {
+    this.props.deleteLink(this.props.graph.data.id!, toDeleteLink);
+    this.setPostDeleteState(toDeleteLink);
+  }
+
+  drawLink = (link: GraphLink, ctx: CanvasRenderingContext2D) => {
+    if (!this.state.ctx) this.setState({ ctx });
+    const linkStyle = link.style || {};
+    let source = link.source as GraphNode;
+    let target = link.target as GraphNode;
+    // Highlight the link if it is being hovered or selected
+    if ([this.state.hoveredObject, this.state.currentNodeOrLink].includes(link)) {
+      this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, linkStyle.width! + 3, source.x!, source.y!, target.x!, target.y!); 
+    }
+    this.drawLine(ctx, linkStyle.color!, linkStyle.width!, source.x!, source.y!, target.x!, target.y!); 
   }
 
   /**
@@ -103,8 +119,8 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     if (!this.state.hasClickBeenHandled) {
       switch (this.state.currentTool) {
         case 'pointer':
-          if (this.state.currentNode) {
-            this.setState({ currentNode: null });
+          if (this.state.currentNodeOrLink) {
+            this.setState({ currentNodeOrLink: null });
           }
           break;
         case 'pencil':
@@ -150,6 +166,18 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     })
   }
 
+  onLinkClick = (link: GraphLink) => {
+    if (!this.state.hasClickBeenHandled) {
+      if (this.state.currentTool === 'pointer') {
+        this.setState({ currentNodeOrLink: link });
+      } 
+      else if (this.state.currentTool === 'eraser') {
+        this.deleteLink(link);
+      }
+    }
+    this.setState({ hasClickBeenHandled: true });
+  }
+
   /**
    * Callback function for node left-button clicks. Sends the node details to the inspector 
    * and also tracks double-clicking for unsticking node positions.
@@ -159,7 +187,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   onNodeClick = (node: GraphNode) => {
     if (!this.state.hasClickBeenHandled) {
       if (this.state.currentTool === 'pointer') {
-        this.setState({ currentNode: node });
+        this.setState({ currentNodeOrLink: node });
         this.trackNodeDblClick(node);
       } 
       else if (this.state.currentTool === 'eraser') {
@@ -175,15 +203,15 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 
   handleNodePencilClick = (node: GraphNode) => {
     if (this.state.isAddingLink) {
-      if (!node.neighbours?.has(this.state.currentNode!.id!) && node !== this.state.currentNode) {
-        this.addLink(this.state.currentNode!.id!, node.id!);
-        this.setState({ currentNode: null })
+      if (!node.neighbours?.has(this.state.currentNodeOrLink!.id!) && node !== this.state.currentNodeOrLink) {
+        this.addLink(this.state.currentNodeOrLink!.id!, node.id!);
+        this.setState({ currentNodeOrLink: null })
       }
       this.setState({ isAddingLink: false });
     }
     else {
       this.setState({ 
-        currentNode: node,
+        currentNodeOrLink: node,
         isAddingLink: true,
         mouseX: node.x!,
         mouseY: node.y!
@@ -216,14 +244,14 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     });
   }
 
-  onNodeHover = (node: GraphNode | null) => {
-    if (node !== this.state.hoveredNode) {
-      this.setState({ hoveredNode: node });
+  onHover = (nodeOrLink: GraphNode | GraphLink | null) => {
+    if (nodeOrLink !== this.state.hoveredObject) {
+      this.setState({ hoveredObject: nodeOrLink });
     }
   }
 
   onNodeDrag = (node: GraphNode) => {
-    this.setState({ currentNode: node });
+    this.setState({ currentNodeOrLink: node });
   }
 
   onNodeDragEnd = (node: GraphNode) => {
@@ -259,35 +287,16 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     // Assign coordinates to the node
     Object.assign(newNode, { fx, fy });
     // Add it to the list of nodes
-    this.props.addNode(this.props.graph.data.id as string, newNode);
+    this.props.addNode(this.props.graph.data.id!, newNode);
     this.setState({
       shouldPreventZoom: true,
-      currentNode: newNode,
+      currentNodeOrLink: newNode,
     });
-  }
-
-  pushNode = (node: GraphNode) => {
-    this.setState(prevState => ({
-      // data: {
-      //   ...prevState.data,
-      //   nodes: [...prevState.data.nodes, node],
-      //   nodeSequence: prevState.data.nodeSequence! + 1
-      // },
-      shouldPreventZoom: true,
-      currentNode: node,
-    }));
   }
 
   deleteNode = (toDeleteNode: GraphNode) => {
-    this.props.deleteNode(this.props.graph.data.id as string, toDeleteNode);
-    this.setState(prevState => {
-      let currentNode = prevState.currentNode;
-      return {
-          currentNode: currentNode === toDeleteNode ? null : currentNode,
-          hoveredNode: null,
-          shouldPreventZoom: true
-      }
-    });
+    this.props.deleteNode(this.props.graph.data.id!, toDeleteNode);
+    this.setPostDeleteState(toDeleteNode);
   }
 
   /**
@@ -317,25 +326,22 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     ctx.fillText(label, node.x!, node.y! + 5);
   
     // Highlight the node if it is being hovered
-    if ([this.state.hoveredNode?.id, this.state.currentNode?.id].includes(node.id)) {
-      ctx.beginPath();
-      ctx.arc(node.x!, node.y!, nodeStyle.size! + 3, 0, 2 * Math.PI, false);
-      ctx.fillStyle = graphConstants.HIGHLIGHT_NODE_COLOR;
-      ctx.fill();
+    let hoveredObject = this.state.hoveredObject;
+    if ([hoveredObject, this.state.currentNodeOrLink].includes(node)) {
+      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_COLOR);
     }
-    // Light highlighting of neighbours of hovered node
-    else if (this.state.hoveredNode?.neighbours?.has(node.id!)) {
-      ctx.beginPath();
-      ctx.arc(node.x!, node.y!, nodeStyle.size! + 3, 0, 2 * Math.PI, false);
-      ctx.fillStyle = graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR;
-      ctx.fill();
+    // Or light highlighting if it is a neighbour of the hovered node/link
+    else if (
+      hoveredObject && 
+        (('isGroup' in hoveredObject && this.props.graph.neighbours[hoveredObject.id!].has(node)) ||
+        ('source' in hoveredObject && [hoveredObject.source, hoveredObject.target].includes(node)))
+    ) {
+      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR);
     }
-
     // If a new link is being added, draw it based on coordinates of the selected node
-    if (node === this.state.currentNode && this.state.isAddingLink) {
-      this.drawNewLink(ctx, node.x!, node.y!);
+    if (node === this.state.currentNodeOrLink && this.state.isAddingLink) {
+      this.drawTempLink(ctx, node.x!, node.y!);
     }
-
     // Draw main node shape, either default circle or icon
     if (nodeStyle.icon) {
 
@@ -354,40 +360,40 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 
   addLink = (source: string | number, target: string | number) => {
     let newLink = {
+      id: this.props.graph.data.linkSequence,
       source, 
       target
     };
-    this.props.addLink(this.props.graph.data.id as string, newLink)
+    this.props.addLink(this.props.graph.data.id!, newLink)
   }
 
-  pushLink = (link: LinkObject) => {
-    // Add each node to the other's set of neighbours
-    // let nextNodes = [...this.state.data.nodes];
-    // let [nodeA, nodeB] = nextNodes.filter(node => node.id === link.source || node.id === link.target);
-    // nodeA.neighbours!.add(nodeA.id === link.source ? link.target as string : link.source as string);
-    // nodeB.neighbours!.add(nodeB.id === link.source ? link.target as string : link.source as string)
-
-    // this.setState(prevState => ({
-    //   data: {
-    //     ...prevState.data,
-    //     links: [...prevState.data.links, link],
-    //     nodes: nextNodes
-    //   }
-    // }));
+  drawTempLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {
+    this.drawLine(ctx, 'black', 1, originX, originY, this.state.mouseX, this.state.mouseY)
   }
 
-  drawNewLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {
+  drawLine = (ctx: CanvasRenderingContext2D, color: string, width: number, startX: number, startY: number, endX: number, endY: number) => {
     ctx.beginPath();
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1;
-    ctx.moveTo(originX, originY);
-    ctx.lineTo(this.state.mouseX, this.state.mouseY);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
     ctx.stroke();
     ctx.closePath();
   }
 
   selectTool = (tool: string) => {
     this.setState({ currentTool: tool });
+  }
+
+  setPostDeleteState = (deletedObject: GraphLink | GraphNode) => {
+    this.setState(prevState => {
+      let currentNodeOrLink = prevState.currentNodeOrLink;
+      return {
+          currentNodeOrLink: currentNodeOrLink === deletedObject ? null : currentNodeOrLink,
+          hoveredObject: null,
+          shouldPreventZoom: true
+      }
+    });
   }
 
   render() {
@@ -397,7 +403,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     }
     const detailsProps = {
       ref: this.details,
-      node: {...this.state.currentNode!}
+      nodeOrLink: {...this.state.currentNodeOrLink!}
     }
     const graphProps: ForceGraphProps = { 
       graphData: this.props.graph.data,
@@ -406,12 +412,12 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       onNodeDrag: this.onNodeDrag,
       onNodeDragEnd: this.onNodeDragEnd,
       onNodeClick: this.onNodeClick,
-      onNodeHover: this.onNodeHover,
+      onNodeHover: this.onHover,
       nodeCanvasObject: this.drawNode,
       nodeCanvasObjectMode: () => 'replace',
-      linkWidth: 4,
-      // onLinkHover: this.onLinkHover,
-      // onLinkClick: this.onLinkClick,
+      onLinkClick: this.onLinkClick,
+      onLinkHover: this.onHover,
+      linkCanvasObject: this.drawLink,
       d3VelocityDecay: 0.1,
       d3AlphaDecay: 0.1,
       // Zoom callbacks to prevent default zooming out/in on node creation/deletion
@@ -424,13 +430,13 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         this.setState({ zoomAmount: k })
       },
     }
-
+    
     return (
       <main id='dashboard' onClick={this.onClick}>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 
         }
-        {this.state.currentNode 
+        {this.state.currentNodeOrLink 
           &&  <Details {...detailsProps} /> 
         }
         <Toolbar selectTool={this.selectTool} />
@@ -454,6 +460,7 @@ const mapStateToProps = (state: RootState) => ({
 const mapDispatchToProps = {
   addLink,
   addNode,
+  deleteLink,
   deleteNode,
 };
 

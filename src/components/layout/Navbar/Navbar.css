@@ -1,0 +1,42 @@
+.navbar {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 15px 0 15px;
+  align-items: center;
+  z-index: 2000;
+}
+
+.navbar-brand {
+  color: #408ab8;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+}
+
+.user-menu {
+  display: flex;
+  justify-content: space-between;
+  width: 80px;
+  margin-right: 10px;
+  color: #3e4346;
+}
+
+.btn {
+  cursor: pointer;
+}
+
+.navbar-btn {
+  font-size: 25px;
+}
+
+.fadein-btn {
+  opacity: 60%;
+}
+
+.fadein-btn:hover {
+  opacity: 100%;
+}

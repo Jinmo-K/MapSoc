@@ -100,7 +100,6 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
    * @param e The click event
    */
   onClick = (e: React.MouseEvent) => {
-    console.log(this.state.currentNodeOrLink )
     this.setState({ hasClickBeenHandled: false });
     let isMenuClick = this.isContextMenuClick(e);
     // Close context menu if it's open and user clicks outside of it

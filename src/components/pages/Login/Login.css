@@ -52,10 +52,13 @@
   font-size: 15px;
 }
 
+.form-submit, .form-submit:hover, .form-submit:active, .form-submit:focus {
+  border: solid 3px #408ab8;
+}
+
 .form-submit {
   height: 40px;
   width: 100%;
-  border: solid 3px #408ab8;
   background: rgba(137, 188, 219, 0.3);
   color: #408ab8;
   font-size: 20px;
@@ -80,6 +83,7 @@
 .form-submit:disabled {
   opacity: 0.5;
   cursor: default;
+  background: rgba(137, 188, 219, 0.5);
 }
 
 .form-link {
@@ -90,4 +94,5 @@
 .form-group {
   width: 80%;
   margin: 0 auto 5px;
+  align-items: center;
 }

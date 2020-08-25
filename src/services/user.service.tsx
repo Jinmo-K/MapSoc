@@ -23,7 +23,7 @@ function get(userId: string) {
 }
 
 function update(user: IUser) {
-  return axios.post(userConstants.USERS_ENDPOINT + user.id, user);
+  return axios.put(userConstants.USERS_ENDPOINT + user.id, user);
 }
 
 // Auth --------------------------

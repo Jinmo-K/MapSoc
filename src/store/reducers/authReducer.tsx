@@ -11,7 +11,11 @@ interface AuthState {
 const initialState: AuthState = {
   errors: {},
   isLoggedIn: true,
-  user: {},
+  user: {
+    id: 0,
+    name: 'Test User',
+    email: 'test@mapsoc.com',
+  },
 };
 
 export default (state = initialState, action: AuthAction | UserAction): AuthState => {
@@ -31,7 +35,12 @@ export default (state = initialState, action: AuthAction | UserAction): AuthStat
       };
   
     case userConstants.LOGOUT:
-      return initialState;
+      console.log(action)
+      return {
+        errors: {},
+        isLoggedIn: false,
+        user: {}
+      };
 
     case userConstants.UPDATE_USER_SUCCESS:
       return {

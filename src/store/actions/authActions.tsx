@@ -43,10 +43,9 @@ const loginFailure = (errors: Record<string,string>): AuthAction => ({
   errors
 });
 
-const logout = (): AuthAction => {
-  userService.logout();
-  return { type: userConstants.LOGOUT }
-};
+const logoutAction = (): AuthAction => ({
+  type: userConstants.LOGOUT
+});
 
 
 /* --------------------------------- Thunks --------------------------------- */
@@ -59,6 +58,12 @@ const login = (email: string, password: string): AppThunk => (dispatch) => {
       window.location.href = '/';
     })
     .catch(console.log);
+};
+
+const logout = (): AppThunk => (dispatch) => {   
+  dispatch(logoutAction());
+  userService.logout(); 
+  // window.location.href = '/';
 };
 
 const signup = (user: IUser): AppThunk => (dispatch) => {

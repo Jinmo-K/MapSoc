@@ -13,11 +13,13 @@ export type ModalPage = 'Profile' | 'Security' | 'Settings';
 
 export const ModalContainer: React.FC<IModalContainerProps> = ({ toggleModal }) => {
   const [currentPage, setCurrentPage] = useState<ModalPage>('Profile');
-console.log('container')
+  
   return (
     <div className='modal-container'>
       <ModalNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      <ModalContent page={currentPage} />
+      <div className='modal-content'>
+        <ModalContent page={currentPage} />
+      </div>
       <button className='btn modal-close fadein-btn' onClick={toggleModal}>
         &times;
       </button>

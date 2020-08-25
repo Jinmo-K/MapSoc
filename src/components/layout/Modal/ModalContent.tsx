@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 
 import { RootState } from '../../../store/reducers';
-import { updateUser } from '../../../store/actions';
+import { resetUserErrors, updateUser } from '../../../store/actions';
 import { Profile, Security, Settings } from '../../../components';
 
 interface IModalContentProps extends PropsFromRedux {
   page: string;
 }
 
-export const ModalContentHOC: React.FC<IModalContentProps> = ({ page, user }) => {
-  const components: Record<string, React.FC<any>> = {
-    Profile,
-    Security,
-    Settings
-  };
-  const Component = components[page];
-
-  return (
-      <div className='modal-content'>
-        <Component user={user} />
-      </div>
-  );
+export const ModalContentHOC: React.FC<IModalContentProps> = ({ page, ...props }) => {
+  
+  if (page === 'Profile') {
+    return <Profile {...props} />
+  }
+  else if (page === 'Security') {
+    return <Security {...props} />
+  }
+  else {
+    return <Settings />
+  }
 };
 
 const mapDispatchToProps = {
+  resetUserErrors,
   updateUser,
 };
 
 const mapStateToProps = (state: RootState) => ({
   user: state.auth.user,
+  errors: state.auth.errors,
 });
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

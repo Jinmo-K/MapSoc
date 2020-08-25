@@ -5,21 +5,31 @@ import { useInput } from '../../helpers/useInput';
 import './Profile.css';
 
 export interface IProfileProps {
+  errors: Record<string, string>;
+  resetUserErrors: () => void;
   user: IUser;
+  updateUser: (userId: number, values: Record<string, string>) => void;
 }
 
-export const Profile: React.FC<IProfileProps> = ({ user }) => {
+export const Profile: React.FC<IProfileProps> = ({ errors, resetUserErrors, updateUser, user }) => {
   const {value: name, bindProps: bindName} = useInput(user.name);
   const {value: email, bindProps: bindEmail} = useInput(user.email);
   const [showSubmit, setShowSubmit] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (Object.keys(errors).length === 0) {
+      updateUser(user.id!, { name, email });
+    }
   };
 
   useEffect(() => {
     setShowSubmit(!!name && !!email && (name !== user.name || email !== user.email));
-  }, [name, email])
+  }, [name, email]);
+
+  useEffect(() => {
+    return () => resetUserErrors();
+  }, [])
 
   return (
     <section className='profile'>
@@ -33,7 +43,6 @@ export const Profile: React.FC<IProfileProps> = ({ user }) => {
             type='text'
             id='name'
             className='form-input'
-            placeholder='Name'
             {...bindName}
           />
         </div>
@@ -41,13 +50,17 @@ export const Profile: React.FC<IProfileProps> = ({ user }) => {
         {/* Email */}
         <div className='form-group form-col-wrapper'>
           <label className='form-label' htmlFor='email'>Email</label>
-          <input 
-            type='email'
-            id='email'
-            className='form-input'
-            placeholder='Email'
-            {...bindEmail}
-          />
+          <div>
+            <input 
+              type='email'
+              id='email'
+              className='form-input'
+              {...bindEmail}
+            />
+            <div className='form-input-error-text'>
+              {errors.email}
+            </div>
+          </div>
         </div>
 
         {/* Submit button */}

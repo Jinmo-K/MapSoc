@@ -35,16 +35,28 @@ export default (state = initialState, action: AuthAction | UserAction): AuthStat
       };
   
     case userConstants.LOGOUT:
-      console.log(action)
       return {
         errors: {},
         isLoggedIn: false,
         user: {}
       };
 
+    case userConstants.RESET_USER_ERRORS:
+      return {
+        ...state,
+        errors: {}
+      };
+
+    case userConstants.UPDATE_USER_FAILURE:
+      return {
+        ...state,
+        errors: action.errors,
+      };
+
     case userConstants.UPDATE_USER_SUCCESS:
       return {
         ...state,
+        errors: {},
         user: action.user
       };
 

@@ -18,12 +18,12 @@ function setAuthToken(token: string) {
 
 // API --------------------------
 
-function get(userId: string) {
+function get(userId: number) {
   return axios.get(userConstants.USERS_ENDPOINT + userId);
 }
 
-function update(user: IUser) {
-  return axios.put(userConstants.USERS_ENDPOINT + user.id, user);
+function update(userId: number, values: Record<string, string>) {
+  return axios.put(userConstants.USERS_ENDPOINT + userId, values);
 }
 
 // Auth --------------------------

@@ -10,8 +10,8 @@ interface IModalProps {
 }
 
 export const Modal: React.FC<IModalProps> = ({ children }) => {
-  const el = document.createElement('div');
-console.log('modal', children)
+  const [el, _] = useState(document.createElement('div'));
+
   useEffect(() => {
     modalRoot!.appendChild(el);
     return () => {

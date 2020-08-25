@@ -1,31 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useInput } from '../../helpers/useInput';
+import { IUser } from '../../types';
 
 
 export interface ISecurityProps {
-
+  errors: Record<string, string>;
+  user: IUser;
+  resetUserErrors: () => void;
+  updateUser: (userId: number, values: Record<string, string>) => void;
 }
 
-export const Security: React.FC<ISecurityProps> = ({}) => {
+export const Security: React.FC<ISecurityProps> = ({ errors, resetUserErrors, user, updateUser }) => {
   const {value: currPassword, bindProps: bindCurrPassword} = useInput('');
   const {value: newPassword, bindProps: bindNewPassword} = useInput('');
   const {value: newPassword2, bindProps: bindNewPassword2} = useInput('');
   const [showSubmit, setShowSubmit] = useState(false);
-  const [errors, setErrors] = useState({} as Record<string, string>);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    if (Object.keys(errors).length === 0) {
+      updateUser(user.id!, {currPassword, newPassword});
+    }
   };
 
   useEffect(() => {
     setShowSubmit(!!currPassword && !!newPassword && !!newPassword2 && newPassword === newPassword2);
-    setErrors(errors => {
-      let nextErrors = {...errors};
-      (newPassword !== newPassword2) ? nextErrors.newPassword2 = 'Passwords do not match' : delete nextErrors.newPassword2;
-      return nextErrors;
-    });
   }, [currPassword, newPassword, newPassword2]);
+
+  useEffect(() => {
+    return () => resetUserErrors();
+  }, []);
 
   return (
     <section className='security'>
@@ -35,12 +39,17 @@ export const Security: React.FC<ISecurityProps> = ({}) => {
         {/* Old password */}
         <div className='form-group form-col-wrapper'>
           <label className='form-label' htmlFor='currPassword'>Current</label>
-          <input 
-            type='password'
-            id='currPassword'
-            className='form-input'
-            {...bindCurrPassword}
-          />
+          <div>
+            <input 
+              type='password'
+              id='currPassword'
+              className='form-input'
+              {...bindCurrPassword}
+            />
+            <div className='form-input-error-text'>
+              {errors.currPassword}
+            </div>
+          </div>
         </div>
 
         {/* New password */}
@@ -65,7 +74,7 @@ export const Security: React.FC<ISecurityProps> = ({}) => {
               {...bindNewPassword2}
             />
             <div className='form-input-error-text'>
-              {errors.newPassword2}
+              {(newPassword !== newPassword2) ? 'Passwords do not match' : ''}
             </div>
           </div>
         </div>

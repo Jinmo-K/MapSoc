@@ -280,7 +280,6 @@ const saveLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
  * @param node    The node's updated values
  */
 const saveNode = (graphId: number, node: GraphNode): AppThunk => (dispatch) => {
-  console.log(node)
   // TODO: clean up node data
   graphService.updateNode(graphId, node)
     .then(() => dispatch(saveNodeSuccess(node)))

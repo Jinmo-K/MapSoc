@@ -8,6 +8,7 @@ export {
   loginSuccess,
   login, 
   logout,
+  resetUserErrors,
   signup 
 };
 
@@ -28,7 +29,11 @@ interface ILogoutAction {
   type: typeof userConstants.LOGOUT;
 }
 
-export type AuthAction = ILoginSuccessAction | ILoginFailureAction | ILogoutAction;
+interface IResetUserErrorsAction {
+  type: typeof userConstants.RESET_USER_ERRORS;
+}
+
+export type AuthAction = ILoginSuccessAction | ILoginFailureAction | ILogoutAction | IResetUserErrorsAction;
 
 
 /* --------------------------------- Actions -------------------------------- */
@@ -47,6 +52,10 @@ const logoutAction = (): AuthAction => ({
   type: userConstants.LOGOUT
 });
 
+const resetUserErrorsAction = (): AuthAction => ({
+  type: userConstants.RESET_USER_ERRORS
+})
+
 
 /* --------------------------------- Thunks --------------------------------- */
 
@@ -64,6 +73,10 @@ const logout = (): AppThunk => (dispatch) => {
   dispatch(logoutAction());
   userService.logout(); 
   // window.location.href = '/';
+};
+
+const resetUserErrors = (): AppThunk => (dispatch) => {
+  dispatch(resetUserErrorsAction());
 };
 
 const signup = (user: IUser): AppThunk => (dispatch) => {

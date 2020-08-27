@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { connect, ConnectedProps } from 'react-redux';
 
-import { RootState } from '../../../store/reducers';
 import { ModalContent } from './ModalContent';
 import { ModalNav } from './ModalNav';
 

@@ -13,7 +13,7 @@ interface IAppProps extends PropsFromRedux {
 }
 
 const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph, logout }) => {
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
 
   const toggleModal = () => {
@@ -21,7 +21,7 @@ const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph, logout }) => 
   }
 
   useEffect(() => {
-    // loadTestGraph();
+    loadTestGraph();
   }, [auth.isLoggedIn, loadTestGraph])
 
   return (

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { graphConstants } from '../constants';
-import { Graph, GraphNode, GraphLink } from '../types';
+import { Graph, GraphNode, GraphLink, IGraphSettings } from '../types';
 
 export const graphService = {
   addNode,
@@ -11,7 +11,8 @@ export const graphService = {
   updateLink,
   deleteGraph,
   getGraph,
-  updateGraph
+  updateGraph,
+  updateGraphSettings
 };
 
 /* ---------------------------------- Nodes --------------------------------- */
@@ -89,4 +90,6 @@ function updateGraph(data: Graph) {
   return axios.put(graphConstants.GRAPHS_ENDPOINT + data.id, data);
 }
 
-
+function updateGraphSettings(id: number, values: IGraphSettings) {
+  return axios.put(graphConstants.GRAPHS_ENDPOINT + id + '/settings/', values);
+}

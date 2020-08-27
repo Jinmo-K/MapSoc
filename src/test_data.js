@@ -160,4 +160,10 @@ export default {
   ],
   linkSequence: 6,
   nodeSequence: 6,
+  settings: {
+    defaultLinkColor: graphConstants.DEFAULT_LINK_COLOR,
+    defaultLinkWidth: graphConstants.DEFAULT_LINK_WIDTH,
+    defaultNodeColor: graphConstants.DEFAULT_NODE_COLOR,
+    defaultNodeSize: graphConstants.DEFAULT_NODE_SIZE
+  },
 }

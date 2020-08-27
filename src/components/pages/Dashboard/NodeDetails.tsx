@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { GraphNode } from '../../../types';
+import { ColorPicker } from '../../../components';
 
 
 interface IDetailsProps {
@@ -16,7 +17,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
   const [isEditingName, setIsEditingName] = useState(!node.name);
   const [isGroup, setIsGroup] = useState(node.isGroup);
   const [size, setSize] = useState(node.style!.size!.toString());
-  const [color, setColor] = useState(node.style!.color);
+  const [color, setColor] = useState(node.style!.color!);
   const [notes, setNotes] = useState(node.notes!);
   const originalNode = useRef<GraphNode>({...node, style: {...node.style}});
 
@@ -74,6 +75,14 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     setNotes(nextNode.notes!);
   }
 
+  const onColorChange = (nextColor: string) => {
+    setColor(nextColor);
+    let updatedNode = createNextNode();
+    updatedNode.style!.color = nextColor;
+    saveNode(graphId, updatedNode);
+    updateNode(updatedNode);
+  }
+
   const onNameBlur = () => {
     setIsEditingName(false);
     saveNode(graphId, createNextNode());
@@ -100,14 +109,10 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
       }
     }
     // These changes will be saved to db immediately
-    else if (['size', 'color', 'isGroup'].includes(field)) {
+    else if (['size', 'isGroup'].includes(field)) {
       if (field === 'size') {
         setSize(value);
         updatedNode.style!.size = parseInt(value);
-      }
-      else if (field === 'color') {
-        setColor(value);
-        updatedNode.style!.color = value;
       }
       else if (field === 'isGroup') {
         setIsGroup(!isGroup);
@@ -205,12 +210,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
         {/* Colour */}
         <div className='details-form-control'>
           <label htmlFor='color'>Color</label>
-          <input 
-            id='color'
-            type="color"
-            value={color}
-            onChange={onInputChange}
-          />
+          <ColorPicker initialValue={color} onColorChange={onColorChange} />
         </div>
       </section>
 

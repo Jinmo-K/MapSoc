@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GraphLink, GraphNode } from '../../../types';
 
+import { ColorPicker } from '../../../components';
+
 interface ILinkDetailsProps {
   link: GraphLink;
   linkIndex: Record<string, GraphLink>;
@@ -10,7 +12,7 @@ interface ILinkDetailsProps {
 }
 
 const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, saveLink, updateLink }) => {
-  const [color, setColor] = useState(link.style!.color);
+  const [color, setColor] = useState(link.style!.color!);
   const [notes, setNotes] = useState(link.notes);
   const [width, setWidth] = useState(link.style!.width!.toString());
   const originalLink = useRef<GraphLink>({ ...link, style: {...link.style} });
@@ -19,7 +21,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
    * Creates a copy of the link's current state
    * @returns The copy of the link
    */
-  const createNextNode = (): GraphLink => {
+  const createNextLink = (): GraphLink => {
     let currentLink = linkIndex[link.id!];
     return {...currentLink, style: {...currentLink.style!}};
   }
@@ -41,9 +43,17 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
 
   const load = (nextLink: GraphLink) => {
     originalLink.current = {...nextLink, style: {...nextLink.style}};
-    setColor(nextLink.style!.color);
+    setColor(nextLink.style!.color!);
     setNotes(nextLink.notes);
     setWidth(nextLink.style!.width!.toString());
+  };
+
+  const onColorChange = (nextColor: string) => {
+    let updatedLink = createNextLink();
+    setColor(nextColor);
+    updatedLink.style!.color = nextColor;
+    saveLink(graphId, updatedLink);
+    updateLink(updatedLink);
   };
 
   const onNotesBlur = () => {
@@ -53,14 +63,10 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let field = e.currentTarget.id;
     let value = e.currentTarget.value;
-    const updatedLink = createNextNode();
+    const updatedLink = createNextLink();
 
-    if (['width', 'color'].includes(field)) {
-      if (field === 'color') {
-        setColor(value);
-        updatedLink.style!.color = value;
-      }
-      else if (field === 'width') {
+    if (['width'].includes(field)) {
+      if (field === 'width') {
         setWidth(value);
         updatedLink.style!.width = parseInt(value);
       }
@@ -108,12 +114,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
         {/* Colour */}
         <div className='details-form-control'>
           <label htmlFor='color'>Color</label>
-          <input 
-            id='color'
-            type="color"
-            value={color}
-            onChange={onInputChange}
-          />
+          <ColorPicker initialValue={color} onColorChange={onColorChange} />
         </div>
       </section>
 

@@ -1,20 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation, Switch } from 'react-router-dom';
 
 import { RootState } from './store/reducers';
-import { loadTestGraph } from './store/actions';
-import { Navbar } from './components';
+import { loadTestGraph, logout } from './store/actions';
+import { Modal, ModalContainer, Navbar } from './components';
 
 import './App.css';
-
 
 interface IAppProps extends PropsFromRedux {
   children: JSX.Element
 }
 
-const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph }) => {
+const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph, logout }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  }
 
   useEffect(() => {
     loadTestGraph();
@@ -25,7 +29,15 @@ const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph }) => {
       {/* Navbar */}
       {
         (location.pathname !== '/')
-        && <Navbar isLoggedIn={auth.isLoggedIn} />
+        && <Navbar isLoggedIn={auth.isLoggedIn} logout={logout} toggleModal={toggleModal} />
+      }
+
+      {/* Modal */}
+      {
+        isModalOpen 
+        &&  <Modal>
+              <ModalContainer toggleModal={toggleModal} />
+            </Modal>  
       }
 
       {/* Routes */}
@@ -46,6 +58,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = {
   loadTestGraph,
+  logout,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

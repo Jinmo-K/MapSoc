@@ -1,0 +1,71 @@
+.color-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.color-picker-selector {
+  position: relative;
+  background: rgb(245, 245, 245);
+  padding: 4px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(118, 118, 118, 0.3);
+  box-shadow: 0 2px 5px rgba(0,0,0,.3);
+  cursor: pointer;
+}
+
+.color-picker-selector:hover, .color-picker-selector:focus, .color-picker-selector:active {
+  background: rgb(233, 233, 233);
+}
+
+.color-picker-selector-current {
+  height: 100%;
+  width: 100%;
+}
+
+.color-picker-palette {
+  position: absolute;
+  width: 210px;
+  background-color: white;
+  padding: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,.3);
+  z-index: 6;
+}
+
+.color-picker-palette-col {
+  display: inline-block;
+}
+
+.color-picker-palette-cell {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+}
+
+.color-picker-palette-cell:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
+}
+
+.color-picker-palette-cell:hover, .color-picker-palette-cell-selected {
+  border: 2px solid hsla(0,0%,100%,.6);
+}
+
+.color-picker-palette-cell:hover::after, .color-picker-palette-cell-selected::after {
+  border: 1px solid rgba(0,0,0,.6);
+}
+
+.color-picker-palette-row .color-picker-palette-cell {
+  display: inline-block;
+}
+
+.color-picker input[type="color" i]:active {
+  cursor: default;
+}
+

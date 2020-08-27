@@ -11,7 +11,11 @@ interface AuthState {
 const initialState: AuthState = {
   errors: {},
   isLoggedIn: true,
-  user: {},
+  user: {
+    id: 0,
+    name: 'Test User',
+    email: 'test@mapsoc.com',
+  },
 };
 
 export default (state = initialState, action: AuthAction | UserAction): AuthState => {
@@ -31,11 +35,28 @@ export default (state = initialState, action: AuthAction | UserAction): AuthStat
       };
   
     case userConstants.LOGOUT:
-      return initialState;
+      return {
+        errors: {},
+        isLoggedIn: false,
+        user: {}
+      };
+
+    case userConstants.RESET_USER_ERRORS:
+      return {
+        ...state,
+        errors: {}
+      };
+
+    case userConstants.UPDATE_USER_FAILURE:
+      return {
+        ...state,
+        errors: action.errors,
+      };
 
     case userConstants.UPDATE_USER_SUCCESS:
       return {
         ...state,
+        errors: {},
         user: action.user
       };
 

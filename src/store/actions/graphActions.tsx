@@ -1,5 +1,5 @@
 import { AppThunk } from '../store';
-import { GraphNode, Graph, GraphLink } from '../../types';
+import { GraphNode, Graph, GraphLink, IGraphSettings } from '../../types';
 import { graphService } from '../../services';
 import { graphConstants } from '../../constants';
 
@@ -15,6 +15,7 @@ export {
   saveLink,
   saveNode,
   updateGraph,
+  updateGraphSettings,
   updateLink,
   updateNode,
 }
@@ -86,7 +87,17 @@ interface IUpdateGraphFailureAction {
 
 interface IUpdateGraphSuccessAction {
   type: typeof graphConstants.UPDATE_GRAPH_SUCCESS;
-  graph: Graph;
+  values: Graph;
+}
+
+interface IUpdateGraphSettingsFailureAction {
+  type: typeof graphConstants.UPDATE_GRAPH_SETTINGS_FAILURE;
+  errors: Record<string, string>;
+}
+
+interface IUpdateGraphSettingsSuccessAction {
+  type: typeof graphConstants.UPDATE_GRAPH_SETTINGS_SUCCESS;
+  values: IGraphSettings;
 }
 
 interface IUpdateLinkAction {
@@ -115,6 +126,8 @@ export type GraphAction =
   IUpdateGraphBeginAction |
   IUpdateGraphFailureAction |
   IUpdateGraphSuccessAction |
+  IUpdateGraphSettingsFailureAction |
+  IUpdateGraphSettingsSuccessAction |
   IUpdateLinkAction |
   IUpdateNodeAction
 ;
@@ -185,9 +198,19 @@ const updateGraphFailure = (errors: Record<string, string>): GraphAction => ({
   errors
 });
 
-const updateGraphSuccess = (graph: Graph): GraphAction => ({
+const updateGraphSuccess = (values: Graph): GraphAction => ({
   type: graphConstants.UPDATE_GRAPH_SUCCESS,
-  graph
+  values
+});
+
+const updateGraphSettingsFailure = (errors: Record<string, string>) => ({
+  type: graphConstants.UPDATE_GRAPH_SETTINGS_FAILURE,
+  errors
+});
+
+const updateGraphSettingsSuccess = (values: IGraphSettings) => ({
+  type: graphConstants.UPDATE_GRAPH_SETTINGS_SUCCESS,
+  values
 });
 
 const updateLinkAction = (link: GraphLink): GraphAction => ({
@@ -252,6 +275,14 @@ const updateGraph = (data: Graph): AppThunk => (dispatch) => {
     .catch(console.log);
 };
 
+const updateGraphSettings = (id: number, values: IGraphSettings): AppThunk => (dispatch) => {
+  graphService.updateGraphSettings(id, values)
+    .then(() => {
+      dispatch(updateGraphSettingsSuccess(values));
+    })
+    .catch(console.log);
+};
+
 /**
  * Update the rendered link in state
  * @param link The link's updated values
@@ -280,7 +311,6 @@ const saveLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
  * @param node    The node's updated values
  */
 const saveNode = (graphId: number, node: GraphNode): AppThunk => (dispatch) => {
-  console.log(node)
   // TODO: clean up node data
   graphService.updateNode(graphId, node)
     .then(() => dispatch(saveNodeSuccess(node)))

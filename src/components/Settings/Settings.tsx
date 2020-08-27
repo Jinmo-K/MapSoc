@@ -12,6 +12,7 @@ export interface ISettingsProps {
 }
 
 export const Settings: React.FC<ISettingsProps> = ({ graph, updateGraphSettings }) => {
+  console.log(graph)
   const [defaultNodeColor, setDefaultNodeColor] = useState(graph.settings!.defaultNodeColor);
   const {value: defaultNodeSize, bindProps: bindDefaultNodeSize} = useInput(graph.settings!.defaultNodeSize.toString());
   const [defaultLinkColor, setDefaultLinkColor] = useState(graph.settings!.defaultLinkColor);

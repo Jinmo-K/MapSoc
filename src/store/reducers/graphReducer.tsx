@@ -18,6 +18,12 @@ const initialState: GraphState = {
     links: [],
     linkSequence: 0,
     nodeSequence: 0,
+    settings: {
+      defaultLinkColor: graphConstants.DEFAULT_LINK_COLOR,
+      defaultLinkWidth: graphConstants.DEFAULT_LINK_WIDTH,
+      defaultNodeColor: graphConstants.DEFAULT_NODE_COLOR,
+      defaultNodeSize: graphConstants.DEFAULT_NODE_SIZE
+    },
   },
   idToLink: {},
   idToNode: {},
@@ -143,7 +149,7 @@ export default (state = initialState, action: GraphAction): GraphState => {
     case graphConstants.UPDATE_GRAPH_SUCCESS:
       return {
         ...state,
-        data: action.graph,
+        data: {...state.data, ...action.values},
         isUpdating: false,
       };
 

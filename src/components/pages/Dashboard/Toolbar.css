@@ -9,7 +9,7 @@
   background-color: white;
   border: 2px dashed rgb(208, 208, 208);
   text-align: center;
-  z-index: 1000;
+  z-index: 2;
   top: 0;
   bottom: 0;
   margin: auto 0 auto 50px;

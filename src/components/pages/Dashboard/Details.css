@@ -9,7 +9,7 @@
   right: 50px;
   margin: auto 0 auto 0;
   padding: 20px;
-  z-index: 1000;
+  z-index: 2;
 }
 
 .details-form-control {

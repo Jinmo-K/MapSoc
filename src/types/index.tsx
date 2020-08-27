@@ -13,6 +13,14 @@ export interface Graph extends GraphData {
   nodes: GraphNode[];
   links: GraphLink[];
   linkSequence?: number;
+  settings?: IGraphSettings;
+}
+
+export interface IGraphSettings {
+  defaultLinkColor: string;
+  defaultLinkWidth: number;
+  defaultNodeColor: string;
+  defaultNodeSize: number;
 }
 
 /* ---------------------------------- Nodes --------------------------------- */

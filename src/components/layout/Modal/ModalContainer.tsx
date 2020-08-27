@@ -16,6 +16,7 @@ export const ModalContainer: React.FC<IModalContainerProps> = ({ toggleModal }) 
   
   return (
     <div className='modal-container'>
+      <div className='overlay' onClick={toggleModal} />
       <ModalNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className='modal-content'>
         <ModalContent page={currentPage} />

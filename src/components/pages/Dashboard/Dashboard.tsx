@@ -280,8 +280,8 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       isGroup: false,
       notes: '',
       style: {
-        color: graphConstants.DEFAULT_NODE_COLOR,
-        size: graphConstants.DEFAULT_NODE_SIZE
+        color: this.props.graph.data.settings!.defaultNodeColor,
+        size: this.props.graph.data.settings!.defaultNodeSize,
       },
       type: 'node',
     };
@@ -363,7 +363,11 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     let newLink = {
       id: this.props.graph.data.linkSequence,
       source, 
-      target
+      target,
+      style: {
+        color: this.props.graph.data.settings!.defaultLinkColor,
+        width: this.props.graph.data.settings!.defaultLinkWidth
+      }
     };
     this.props.addLink(this.props.graph.data.id!, newLink)
   }

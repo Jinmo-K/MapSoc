@@ -8,7 +8,6 @@ import { Modal, ModalContainer, Navbar } from './components';
 
 import './App.css';
 
-
 interface IAppProps extends PropsFromRedux {
   children: JSX.Element
 }

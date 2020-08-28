@@ -12,7 +12,6 @@ export interface ISettingsProps {
 }
 
 export const Settings: React.FC<ISettingsProps> = ({ graph, updateGraphSettings }) => {
-  console.log(graph)
   const [defaultNodeColor, setDefaultNodeColor] = useState(graph.settings!.defaultNodeColor);
   const {value: defaultNodeSize, bindProps: bindDefaultNodeSize} = useInput(graph.settings!.defaultNodeSize.toString());
   const [defaultLinkColor, setDefaultLinkColor] = useState(graph.settings!.defaultLinkColor);
@@ -50,7 +49,7 @@ export const Settings: React.FC<ISettingsProps> = ({ graph, updateGraphSettings 
           {/* Default node color */}
           <div className='form-group form-col-wrapper'>
             <label htmlFor='defaultNodeColor'>Default node color</label>
-            <ColorPicker initialValue={defaultNodeColor} onColorChange={(color: string) => setDefaultNodeColor(color)} />
+            <ColorPicker value={defaultNodeColor} onColorChange={(color: string) => setDefaultNodeColor(color)} />
           </div>
           {/* Default node size */}
           <div className='form-group form-col-wrapper'>
@@ -69,7 +68,7 @@ export const Settings: React.FC<ISettingsProps> = ({ graph, updateGraphSettings 
           {/* Default link color */}
           <div className='form-group form-col-wrapper'>
             <label htmlFor='defaultLinkColor'>Default link color</label>
-            <ColorPicker initialValue={defaultLinkColor} onColorChange={(color: string) => setDefaultLinkColor(color)} />
+            <ColorPicker value={defaultLinkColor} onColorChange={(color: string) => setDefaultLinkColor(color)} />
           </div>
           {/* Default link size */}
           <div className='form-group form-col-wrapper'>

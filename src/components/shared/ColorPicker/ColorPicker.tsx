@@ -24,17 +24,16 @@ const paletteColumns = [
 const paletteRow = ['#FFFFFF', '#F2F2F2', '#E6E6E6', '#CCCCCC', '#B3B3B3', '#999999', '#808080', '#666666', '#4C4C4C', '#000000'];
 
 interface IColorPickerProps {
-  initialValue: string;
+  value: string;
   onColorChange: (color: string) => void;
 }
 
-export const ColorPicker: React.FC<IColorPickerProps> = ({ initialValue, onColorChange }) => {
-  const [currentColor, setCurrentColor] = useState(initialValue);
+export const ColorPicker: React.FC<IColorPickerProps> = ({ value, onColorChange }) => {
+  const [currentColor, setCurrentColor] = useState(value);
   const [showPalette, setShowPalette] = useState(false);
   const paletteRef = useRef<HTMLDivElement>(null);
 
   const handleCellClick = (color: string) => {
-    setCurrentColor(color);
     onColorChange(color);
     setShowPalette(false);
   }
@@ -70,6 +69,10 @@ export const ColorPicker: React.FC<IColorPickerProps> = ({ initialValue, onColor
   useEffect(() => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [handleClickOutside]);
+
+  useEffect(() => {
+    setCurrentColor(value);
+  }, [value]);
 
   return (
     <div className='color-picker'>

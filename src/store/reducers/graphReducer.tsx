@@ -145,6 +145,15 @@ export default (state = initialState, action: GraphAction): GraphState => {
         ...state,
         isUpdating: false
       };
+    
+    case graphConstants.UPDATE_GRAPH_SETTINGS_SUCCESS:
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          settings: action.values
+        }
+      };
 
     case graphConstants.UPDATE_GRAPH_SUCCESS:
       return {

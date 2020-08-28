@@ -1,0 +1,70 @@
+.custom-slider-knob {
+  position: absolute;
+  height: 20px;
+  width: 10px;
+  top: 0;
+  left: 2px;
+  border-radius: 2px;
+  transition: transform 0.1s;
+}
+
+.custom-slider-knob:before {
+  border: 1px solid rgb(53, 53, 53);
+}
+
+.custom-slider-knob:after {
+  border: 2px solid hsla(0,0%,100%,.6);
+}
+
+.custom-slider-knob:before,
+.custom-slider-knob:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+}
+
+.custom-slider-range {
+  background: rgb(223, 223, 223);
+  border-radius: 10px;
+  width: 100%;
+  height: 6px;
+}
+
+.custom-slider-range {
+  background: rgb(223, 223, 223);
+  border-radius: 10px;
+  width: 100%;
+  height: 6px;
+}
+
+.custom-slider-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  padding: 8px 0;
+}
+
+.range-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  opacity: 80%;
+}
+
+.range-slider:hover {
+  opacity: 100%;
+}
+
+.range-slider .input-slider {
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+  margin: 2px 0;
+  padding: 0;
+}

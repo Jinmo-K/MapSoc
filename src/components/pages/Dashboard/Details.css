@@ -1,7 +1,7 @@
 .details {
   position: absolute;
   background-color: white;
-  border: 2px dashed lightgray;
+  box-shadow: 0 1px 5px gray;
   width: 300px;
   height: 600px;
   top: 0;
@@ -54,11 +54,6 @@
   font-family: inherit;
 }
 
-.details h1 {
-  font-size: 23px;
-  margin-bottom: 10px;
-}
-
 .details h2 {
   font-weight: 500;
   font-size: 17px;
@@ -67,15 +62,113 @@
   text-transform: uppercase;
 }
 
-.details #name {
-  display: block;
-  font-size: inherit;
-  font-weight: bold;
-  max-width: 100%;
-}
-
 .details-groups {
   font-size: 14px;
   color: rgb(34, 34, 34);
   font-weight: 300;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.details-button-row {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 2px 5px lightgray;
+  margin: 20px 0;
+}
+
+.details-button-row-btn {
+  height: 100%;
+  width: 100%;
+  border: 1px solid lightgray;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.details-button-row-btn:hover, 
+.details-button-row-btn:active,
+.details-button-row-btn:focus {
+  border: 1px solid lightgray;
+}
+
+.details-button-row-btn:hover {
+  background: rgb(235, 235, 235);
+  cursor: pointer;
+}
+
+.details-button-row-btn .color-picker,
+.details-button-row-btn .color-picker-selector {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+  border: none;
+}
+
+.details-button-row i {
+  font-size: 23px;
+}
+
+.details-node-icon-header {
+  text-align: center;
+  padding: 20px;
+}
+
+.details-node-icon {
+  font-size: 50px;
+}
+
+.details-node-icon:hover {
+  filter: brightness(90%);
+  cursor: pointer;
+}
+
+.details-node-header {
+  position: relative;
+  font-size: 23px;
+  margin-top: 0;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.details-node-header .edit-icon-btn {
+  position: absolute;
+  top: 10px;
+  opacity: 80%;
+}
+
+.details-node-header .edit-icon-btn:hover {
+  opacity: 100%;
+  cursor: pointer;
+}
+
+.details-node-header .name-input {
+  font-size: inherit;
+  max-width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+}
+
+.details-button-row .size-slider-wrapper {
+  background: white;
+  position: absolute;
+  width: 100%;
+  top: 40px;
+  box-shadow: 0 2px 5px gray;
+  padding: 10px;
+}
+
+.details-button-row .size-slider-label {
+  color: rgb(120, 120, 120);
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
 }

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { GraphNode } from '../../../types';
-import { ColorPicker } from '../../../components';
+import { ColorPicker, RangeSlider } from '../../../components';
 
 
 interface IDetailsProps {
@@ -15,11 +15,21 @@ interface IDetailsProps {
 const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, updateNode, saveNode}) => {
   const [name, setName] = useState(node.name);
   const [isEditingName, setIsEditingName] = useState(!node.name);
+  const [isEditingSize, setIsEditingSize] = useState(false);
   const [isGroup, setIsGroup] = useState(node.isGroup);
   const [size, setSize] = useState(node.style!.size!.toString());
   const [color, setColor] = useState(node.style!.color!);
   const [notes, setNotes] = useState(node.notes!);
   const originalNode = useRef<GraphNode>({...node, style: {...node.style}});
+
+  /**
+   * Closes the size slider if user clicks outside of it
+   */
+  const closeSizeSliderOnClick = useCallback((e: MouseEvent) => {
+    if (!(e.target as HTMLElement).className.includes('slider')) {
+      setIsEditingSize(false);
+    }
+  }, [])
 
   /**
    * Creates a copy of the node's current state
@@ -83,6 +93,14 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     updateNode(updatedNode);
   }
 
+  const toggleIsGroup = () => {
+    let updatedNode = createNextNode();
+    setIsGroup(!isGroup);
+    updatedNode.isGroup = !isGroup;
+    saveNode(graphId, updatedNode);
+    updateNode(updatedNode);
+  };
+
   const onNameBlur = () => {
     setIsEditingName(false);
     saveNode(graphId, createNextNode());
@@ -92,6 +110,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     saveNode(graphId, createNextNode());
   }
   
+  // TODO: refactor into useEffect
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let field = e.currentTarget.id;
     let value = e.currentTarget.value;
@@ -109,14 +128,10 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
       }
     }
     // These changes will be saved to db immediately
-    else if (['size', 'isGroup'].includes(field)) {
+    else if (['size'].includes(field)) {
       if (field === 'size') {
         setSize(value);
         updatedNode.style!.size = parseInt(value);
-      }
-      else if (field === 'isGroup') {
-        setIsGroup(!isGroup);
-        updatedNode.isGroup = !isGroup;
       }
       saveNode(graphId, updatedNode);
     }
@@ -138,15 +153,23 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     if (node.id !== originalNode.current.id) load(node);
   }, [node, load]);
   
+  useEffect(() => {
+    isEditingSize ? document.addEventListener('click', closeSizeSliderOnClick) : document.removeEventListener('click', closeSizeSliderOnClick);
+  }, [isEditingSize]);
+
   return (
-    <form>
+    <div>
+      <div className='details-node-icon-header'>
+        <i className='fas fa-circle details-node-icon' style={{ color }} />
+      </div>
       {/* Name */}
-      <h1>
+      <h1 className='details-node-header'>
         {
           (isEditingName)
             ? <>
                 <label className='sr-only' htmlFor='name'>Name</label>
                 <input 
+                  className='name-input'
                   id='name'
                   type='text'
                   onKeyDown={handleInputReturnKey}
@@ -154,12 +177,15 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
                   value={name}
                   onChange={onInputChange}
                   autoFocus
+                  autoComplete='off'
                 />
               </>
             : <>
                 {name}
                 {name 
-                  && <button onClick={() => setIsEditingName(true)}>edit</button>
+                  &&  <button onClick={() => setIsEditingName(true)} className='edit-icon-btn'>
+                        <i className='far fa-edit' />
+                      </button>
                 }
               </>
         }
@@ -178,41 +204,41 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
             </p>
       }
 
-      {/* Is group */}
-      <div className='details-form-control'>
-          <label htmlFor='isGroup'>Group</label>
-          <input 
-            id='isGroup'
-            type="checkbox" 
-            checked={isGroup!}
-            // value={isGroup ? 'on' : 'off'}
-            onChange={onInputChange}
-          />
-          <span />
+      <div className='details-button-row'>
+        {/* Color picker button */}
+        <div className='details-button-row-btn' title='Change color'>
+          <ColorPicker value={color} onColorChange={onColorChange} />
         </div>
-
-      {/* Style */}
-      <section className='details-style'>
-        <h2>Style</h2>
-        {/* Size */}
-        <div className='details-form-control'>
-          <label htmlFor='size'>Size</label>
-          <input 
-            id='size'
-            type="range" 
-            min="1" 
-            max="10" 
-            value={size}
-            onChange={onInputChange}
-          />
-          <span>{size}</span>
-        </div>
-        {/* Colour */}
-        <div className='details-form-control'>
-          <label htmlFor='color'>Color</label>
-          <ColorPicker initialValue={color} onColorChange={onColorChange} />
-        </div>
-      </section>
+        {/* Size button */}
+        <button className='details-button-row-btn' title='Change size' onClick={() => isEditingSize ? setIsEditingSize(false) : setIsEditingSize(true)}>
+          <i className='fas fa-expand-alt details-button-row-btn-icon' style={{ color }}/>
+        </button>
+        {
+          (isEditingSize)
+          &&  <div className='size-slider-wrapper'>
+                <div className='size-slider-label'>
+                  <span>Size</span><span>{size}</span>
+                </div>
+                <RangeSlider 
+                  color={color} 
+                  id='size' 
+                  min={1} 
+                  max={10}
+                  onChange={onInputChange} 
+                  onMouseUp={() => setIsEditingSize(false)}
+                  value={size} 
+                />
+              </div>
+        }
+        {/* Group button */}
+        <button className='details-button-row-btn' onClick={toggleIsGroup}>
+          {
+            (isGroup)
+            ? <i className='fas fa-house-user details-button-row-btn-icon' style={{ color }}/>
+            : <i className='fas fa-user' style={{ color }}/>
+          }
+        </button>
+      </div>
 
       {/* Notes */}
       <section className='details-notes'>
@@ -238,7 +264,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
               </button>
             </div>
       }
-    </form>
+    </div>
   );
 }
 

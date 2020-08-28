@@ -114,7 +114,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
         {/* Colour */}
         <div className='details-form-control'>
           <label htmlFor='color'>Color</label>
-          <ColorPicker initialValue={color} onColorChange={onColorChange} />
+          <ColorPicker value={color} onColorChange={onColorChange} />
         </div>
       </section>
 

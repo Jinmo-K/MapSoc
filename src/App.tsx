@@ -21,7 +21,7 @@ const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph, logout }) => 
   }
 
   useEffect(() => {
-    loadTestGraph();
+    if (auth.isLoggedIn) loadTestGraph();
   }, [auth.isLoggedIn, loadTestGraph])
 
   return (

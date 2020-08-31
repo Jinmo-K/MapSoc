@@ -10,21 +10,14 @@
   margin: auto 0 auto 0;
   padding: 20px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
 }
 
 .details-form-control {
   display: flex;
   align-items: center;
   margin: 10px 0;
-}
-
-#details-update-btns {
-  position: absolute;
-  bottom: 15px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
 }
 
 .details-btn {
@@ -36,7 +29,6 @@
   background: none;
   cursor: pointer;
   transform: translateZ(0);
-  background: white;
 }
 
 .details-btn:hover {
@@ -44,14 +36,18 @@
 }
 
 #details-undo-btn {
-  border: 3px solid #408ab8;
+  font-size: 20px;
+  position: absolute;
+  left: 15px;
 }
 
 #notes {
-  border: 1px solid lightgray;
+  border: none;
   resize: none;
   width: 100%;
   font-family: inherit;
+  flex-grow: 1;
+  padding: 5px;
 }
 
 .details h2 {
@@ -68,6 +64,7 @@
   font-weight: 300;
   margin-top: 2px;
   text-align: center;
+  margin-bottom: 0;
 }
 
 .details-button-row {
@@ -154,6 +151,24 @@
   text-align: center;
 }
 
+.details-notes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.details-notes .edit-icon-btn {
+  position: absolute;
+  top: 17px;
+  opacity: 80%;
+}
+
+.details-notes .edit-icon-btn:hover {
+  opacity: 100%;
+  cursor: pointer;
+}
+
 .details-button-row .size-slider-wrapper {
   background: white;
   position: absolute;
@@ -161,6 +176,7 @@
   top: 40px;
   box-shadow: 0 2px 5px gray;
   padding: 10px;
+  z-index: 6;
 }
 
 .details-button-row .size-slider-label {
@@ -171,4 +187,31 @@
   display: flex;
   justify-content: space-between;
   padding: 2px 0;
+}
+
+.details-link-header {
+  position: relative;
+  font-size: 23px;
+  margin-top: 25px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.details-link-header-link-icon {
+  position: relative;
+  margin: 5px auto;
+  height: 40px;
+  width: 5px;
+  background: lightgray;
+}
+
+.details-link-header-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.details-link-header-node-icon {
+  font-size: 17px;
+  margin-right: 5px;
 }

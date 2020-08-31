@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GraphLink, GraphNode } from '../../../types';
 
-import { ColorPicker } from '../../../components';
+import { ColorPicker, RangeSlider } from '../../../components';
+import NotesSection from './NotesSection';
 
 interface ILinkDetailsProps {
   link: GraphLink;
@@ -13,8 +14,9 @@ interface ILinkDetailsProps {
 
 const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, saveLink, updateLink }) => {
   const [color, setColor] = useState(link.style!.color!);
-  const [notes, setNotes] = useState(link.notes);
+  const [notes, setNotes] = useState(link.notes || '');
   const [width, setWidth] = useState(link.style!.width!.toString());
+  const [isEditingWidth, setIsEditingWidth] = useState(false);
   const originalLink = useRef<GraphLink>({ ...link, style: {...link.style} });
 
   /**
@@ -44,7 +46,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   const load = (nextLink: GraphLink) => {
     originalLink.current = {...nextLink, style: {...nextLink.style}};
     setColor(nextLink.style!.color!);
-    setNotes(nextLink.notes);
+    setNotes(nextLink.notes!);
     setWidth(nextLink.style!.width!.toString());
   };
 
@@ -80,69 +82,85 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
     updateLink(updatedLink);
   };
 
+  const renderNodeName = (node: GraphNode) => {
+    let nodeColor = node.style!.color;
+    return (
+      <div className='details-link-header-node'>
+        <i 
+          className={node.isGroup ? 'fas fa-house-user details-link-header-node-icon' : 'fas fa-user details-link-header-node-icon'}
+          style={{ color: nodeColor  }}
+        />
+        <span>{node.name}</span>
+      </div>
+    );
+  };
+
   /**
-   * Reset the details panel state on link change
+   * Reset the details panel state when user clicks a different link
    */
   useEffect(() => {
     if (link.id !== originalLink.current.id) load(link);
   }, [link, load]);
 
   return (
-    <form>
+    <>
       {/* Name */}
-      <h1>
-        {(link.source as GraphNode).name}---
-        {(link.target as GraphNode).name}
+      <h1 className='details-link-header'>
+        {renderNodeName(link.source as GraphNode)}
+        <div 
+          className='details-link-header-link-icon'
+          style={{
+            background: color,
+            width: parseInt(width)
+          }}
+        />
+        {renderNodeName(link.target as GraphNode)}
       </h1>
 
-      {/* Style */}
-      <section className='details-style'>
-        <h2>Style</h2>
-        {/* Size */}
-        <div className='details-form-control'>
-          <label htmlFor='width'>Width</label>
-          <input 
-            id='width'
-            type="range" 
-            min="1" 
-            max="10" 
-            value={width}
-            onChange={onInputChange}
-          />
-          <span>{width}</span>
-        </div>
-        {/* Colour */}
-        <div className='details-form-control'>
-          <label htmlFor='color'>Color</label>
+      <div className='details-button-row'>
+        {/* Color picker button */}
+        <div className='details-button-row-btn' title='Change color'>
           <ColorPicker value={color} onColorChange={onColorChange} />
         </div>
-      </section>
+        {/* Width button */}
+        <button className='details-button-row-btn' title='Change width' onClick={() => setIsEditingWidth(!isEditingWidth)}>
+          <i className='fas fa-expand-alt details-button-row-btn-icon' style={{ color }}/>
+        </button>
+        {
+          (isEditingWidth)
+          &&  <div className='size-slider-wrapper'>
+                <div className='size-slider-label'>
+                  <span>Width</span><span>{width}</span>
+                </div>
+                <RangeSlider 
+                  color={color} 
+                  id='width' 
+                  min={1} 
+                  max={10}
+                  onChange={onInputChange} 
+                  onMouseUp={() => setIsEditingWidth(false)}
+                  value={width} 
+                />
+              </div>
+        }
+      </div>
 
       {/* Notes */}
-      <section className='details-notes'>
-        <h2>Notes</h2>
-        <textarea 
-          id='notes'
-          rows={17}
-          onBlur={onNotesBlur}
-          onChange={onInputChange}
-          value={notes}
-        />
-      </section>
+      <NotesSection onNotesBlur={onNotesBlur} onChange={onInputChange} notes={notes} />
 
-      {/* Undo changes button */}
+      {/* Undo button */}
       {(hasNewValues())
-        &&  <div id='details-update-btns'>
-              <button 
-                id='details-undo-btn' 
-                className='details-btn'
-                onClick={handleCancelClick}
-              >
-                UNDO CHANGES
-              </button>
-            </div>
+        &&  <button 
+              id='details-undo-btn' 
+              className='details-btn'
+              onClick={handleCancelClick}
+              style={{color, borderColor: color}}
+              title='Undo changes'
+            >
+              <i className='fas fa-undo' />
+            </button>
       }
-    </form>
+    </>
   )
 };
 

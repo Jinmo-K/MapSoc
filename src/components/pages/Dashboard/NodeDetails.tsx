@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { GraphNode } from '../../../types';
 import { ColorPicker, RangeSlider } from '../../../components';
+import NotesSection from './NotesSection';
 
 
 interface IDetailsProps {
@@ -80,6 +81,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     setName(nextNode.name);
     setIsGroup(nextNode.isGroup);
     setIsEditingName(!nextNode.name);
+    setIsEditingSize(false);
     setSize(nextNode.style!.size!.toString());
     setColor(nextNode.style!.color!);
     setNotes(nextNode.notes!);
@@ -158,7 +160,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
   }, [isEditingSize]);
 
   return (
-    <div>
+    <>
       <div className='details-node-icon-header'>
         <i className='fas fa-circle details-node-icon' style={{ color }} />
       </div>
@@ -181,12 +183,11 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
                 />
               </>
             : <>
-                {name}
-                {name 
-                  &&  <button onClick={() => setIsEditingName(true)} className='edit-icon-btn'>
-                        <i className='far fa-edit' />
-                      </button>
-                }
+                {name || '...'}
+                <button onClick={() => setIsEditingName(true)} className='edit-icon-btn'>
+                  <i className='far fa-edit' />
+                </button>
+                
               </>
         }
       </h1>
@@ -210,7 +211,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
           <ColorPicker value={color} onColorChange={onColorChange} />
         </div>
         {/* Size button */}
-        <button className='details-button-row-btn' title='Change size' onClick={() => isEditingSize ? setIsEditingSize(false) : setIsEditingSize(true)}>
+        <button className='details-button-row-btn' title='Change size' onClick={() => setIsEditingSize(!isEditingSize)}>
           <i className='fas fa-expand-alt details-button-row-btn-icon' style={{ color }}/>
         </button>
         {
@@ -241,30 +242,21 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
       </div>
 
       {/* Notes */}
-      <section className='details-notes'>
-        <h2>Notes</h2>
-        <textarea 
-          id='notes'
-          rows={17}
-          onBlur={onNotesBlur}
-          onChange={onInputChange}
-          value={notes}
-        />
-      </section>
+      <NotesSection onNotesBlur={onNotesBlur} onChange={onInputChange} notes={notes} />
 
-      {/* Save / cancel buttons */}
+      {/* Undo button */}
       {(hasNewValues())
-        &&  <div id='details-update-btns'>
-              <button 
-                id='details-undo-btn' 
-                className='details-btn'
-                onClick={handleCancelClick}
-              >
-                UNDO CHANGES
-              </button>
-            </div>
+        &&  <button 
+              id='details-undo-btn' 
+              className='details-btn'
+              onClick={handleCancelClick}
+              style={{color, borderColor: color}}
+              title='Undo changes'
+            >
+              <i className='fas fa-undo' />
+            </button>
       }
-    </div>
+    </>
   );
 }
 

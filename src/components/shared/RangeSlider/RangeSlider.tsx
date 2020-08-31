@@ -23,7 +23,7 @@ export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, ma
   }, [value]);
 
   return (
-    <div className='range-slider' onMouseUp={onMouseUp}>
+    <div className='range-slider'>
       <div className='custom-slider-wrapper'>
         <div className='custom-slider-range' />
         <div 
@@ -45,6 +45,7 @@ export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, ma
         min={min}
         max={max}
         onChange={onChange}
+        onMouseUp={onMouseUp}
         value={value}
       />
     </div>

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 
+import { DashboardTool } from './Dashboard';
+
 import './Toolbar.css';
 
 interface IToolbarProps {
-  selectTool: (tool: string) => void;
+  selectTool: (tool: DashboardTool) => void;
 }
 
-const tools = [
+const tools: DashboardTool[] = [
   'pointer',
   'pencil',
   'eraser',

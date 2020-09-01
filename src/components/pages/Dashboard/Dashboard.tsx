@@ -22,7 +22,7 @@ interface IDashboardState {
   nodeClicks: number;
   shouldPreventZoom: boolean;
   zoomAmount: number;
-  currentTool: string;
+  currentTool: DashboardTool;
   currentNodeOrLink: GraphNode | GraphLink | null;
   hoveredObject: GraphNode | GraphLink | null;
   isAddingLink: boolean;
@@ -30,12 +30,18 @@ interface IDashboardState {
   mouseX: number;
   mouseY: number;
   ctx: CanvasRenderingContext2D | null;
+  selectedNodes: GraphNode[];
+  isSelecting: boolean;
+  selectionStartCoords: [number, number];
 }
+
+export type DashboardTool = 'pointer' | 'pencil' | 'eraser' | 'selection';
 
 class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   private graph = React.createRef() as React.MutableRefObject<ForceGraphMethods>;
   private contextMenu = React.createRef<HTMLDivElement>();
   private details = React.createRef<HTMLDivElement>();
+  private selectionBox = React.createRef<HTMLDivElement>();
   readonly state: IDashboardState = {
     showContextMenu: false,
     nodeClicks: 0,
@@ -49,6 +55,9 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     mouseX: 0,
     mouseY: 0,
     ctx: null,
+    selectedNodes: [],
+    isSelecting: false,
+    selectionStartCoords: [0,0],
   }
 
   componentDidMount() {
@@ -57,6 +66,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     graph.d3Force('center', () => null);
     graph.d3Force('collide', forceCollide());
     this.setState({ zoomAmount: graph.zoom() });
+    document.onkeyup = this.handleKeyPress;
   }
 
   closeContextMenu = () => {
@@ -78,6 +88,19 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, linkStyle.width! + 3, source.x!, source.y!, target.x!, target.y!); 
     }
     this.drawLine(ctx, linkStyle.color!, linkStyle.width!, source.x!, source.y!, target.x!, target.y!); 
+  }
+
+  drawSelectionBox = (x: number, y: number) => {
+    let box = this.selectionBox.current!;
+    let [startX, startY] = this.state.selectionStartCoords;
+    let left = Math.min(startX, x);
+    let top = Math.min(startY, y);
+    let right = Math.max(startX, x);
+    let bottom = Math.max(startY, y);
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    box.style.width = (right - left) + 'px';
+    box.style.height = (bottom - top) + 'px';
   }
 
   /**
@@ -110,6 +133,28 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     }
   };
 
+  handleKeyPress = (e: KeyboardEvent) => {
+    switch (e.keyCode) {
+      // Esc
+      case 27:
+        // Pressing escape cancels adding a new link 
+        if (this.state.isAddingLink) this.setState({ isAddingLink: false });
+        break;
+      // Del
+      case 46:
+        // Deletes the selected link/node(s)
+        let currentObject = this.state.currentNodeOrLink;
+        if (currentObject) {
+          currentObject.type === 'node' ? this.deleteNode(currentObject) : this.deleteLink(currentObject as GraphLink);
+        }
+        else if (this.state.selectedNodes.length) {
+          this.state.selectedNodes.forEach(node => this.deleteNode(node));
+        }
+      default:
+        break;
+    }
+  }
+
   /**
    * Called whenever the background of the force graph is clicked. 
    * 
@@ -126,6 +171,10 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         case 'pencil':
           this.handlePencilClick(e);
           break;
+        
+        case 'selection':
+          this.handleSelectionClick(e);
+          break;
       }
       this.setState({ hasClickBeenHandled: true });
     }
@@ -138,6 +187,21 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     else {
       this.addNode(e.clientX, e.clientY);
     }
+  }
+
+  handleSelectionClick = (e: MouseEvent) => {
+    if (this.state.isSelecting) {
+      this.selectNodesInArea(this.state.selectionStartCoords[0], this.state.selectionStartCoords[1], e.clientX, e.clientY)
+    }
+    else {
+      this.setState({ selectionStartCoords: [e.clientX, e.clientY] });
+      let box = this.selectionBox.current!;
+      box.style.left = e.clientX + 'px';
+      box.style.top = e.clientY + 'px';
+      box.style.width = '0px';
+      box.style.height = '0px';
+    }
+    this.setState(state => ({ isSelecting: !state.isSelecting }));
   }
 
   /**
@@ -159,11 +223,15 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   }
 
   onMouseMove = (e: React.MouseEvent) => {
+    if (this.state.isSelecting) {
+      this.drawSelectionBox(e.clientX, e.clientY);
+    }
+
     let {x, y} = this.graph.current.screen2GraphCoords(e.clientX, e.clientY);
     this.setState({
       mouseX: x,
       mouseY: y
-    })
+    });
   }
 
   onLinkClick = (link: GraphLink) => {
@@ -216,13 +284,6 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         mouseX: node.x!,
         mouseY: node.y!
       });
-      // Register 'esc' key events to cancel adding new link
-      document.onkeyup = (e) => {
-        if (e.keyCode === 27) {
-          this.setState({ isAddingLink: false });
-          document.onkeyup = null;
-        }
-      }
     }
   }
 
@@ -251,6 +312,12 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   }
 
   onNodeDrag = (node: GraphNode) => {
+    if (this.state.selectedNodes.length) {
+
+    }
+    else {
+
+    }
     this.setState({ currentNodeOrLink: node });
   }
 
@@ -326,9 +393,9 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     ctx.fillStyle = nodeStyle.color!;
     ctx.fillText(label, node.x!, node.y! + 5);
   
-    // Highlight the node if it is being hovered
+    // Highlight the node if it is being hovered or is selected
     let hoveredObject = this.state.hoveredObject;
-    if ([hoveredObject, this.state.currentNodeOrLink].includes(node)) {
+    if ([hoveredObject, this.state.currentNodeOrLink, ...this.state.selectedNodes].includes(node)) {
       this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_COLOR);
     }
     // Or light highlighting if it is a neighbour of the hovered node/link
@@ -386,7 +453,24 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     ctx.closePath();
   }
 
-  selectTool = (tool: string) => {
+  selectNodesInArea = (x: number, y: number, x0: number, y0: number) => {
+    let {x: x1, y: y1} = this.graph.current.screen2GraphCoords(x, y);
+    let {x: x2, y: y2} = this.graph.current.screen2GraphCoords(x0, y0);
+    let left = Math.min(x1, x2);
+    let right = Math.max(x1, x2);
+    let top = Math.min(y1, y2);
+    let bottom = Math.max(y1, y2);
+    let selectedNodes: GraphNode[] = [];
+    
+    for (let node of this.props.graph.data.nodes) {
+      if (left <= node.x! && node.x! <= right && top <= node.y! && node.y! <= bottom) {
+        selectedNodes.push(node);
+      }
+    }
+    this.setState({ selectedNodes });
+  }
+
+  selectTool = (tool: DashboardTool) => {
     this.setState({ currentTool: tool });
   }
 
@@ -438,6 +522,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     
     return (
       <main id='dashboard' onClick={this.onClick}>
+        <div ref={this.selectionBox} className='selection-box' style={{display: this.state.isSelecting ? 'block' : 'none'}}/>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 
         }
@@ -448,7 +533,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         <section 
           className='graph' 
           onContextMenu={this.onRightClick} 
-          onMouseMove={this.state.isAddingLink ? this.onMouseMove : undefined}
+          onMouseMove={this.state.isAddingLink || this.state.isSelecting ? this.onMouseMove : undefined}
         >
           <ForceGraph2D ref={this.graph} {...graphProps} />
         </section>

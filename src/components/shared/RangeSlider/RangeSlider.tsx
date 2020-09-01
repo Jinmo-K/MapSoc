@@ -5,6 +5,7 @@ import './RangeSlider.css';
 interface IRangeSliderProps {
   color?: string;
   id: string;
+  label: string;
   min: number;
   max: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -12,7 +13,7 @@ interface IRangeSliderProps {
   value: string;
 }
 
-export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, max, min, onChange, onMouseUp=()=>{}, value }) => {
+export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, label, max, min, onChange, onMouseUp=()=>{}, value }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [knobX, setKnobX] = useState(0);
 
@@ -36,7 +37,7 @@ export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, ma
           }} 
         />
       </div>
-      <label className='sr-only' htmlFor={id} style={{textTransform: 'uppercase'}}>{id}</label>
+      <label className='sr-only' htmlFor={id} style={{textTransform: 'uppercase'}}>{label}</label>
       <input
         ref={inputRef}
         id={id}

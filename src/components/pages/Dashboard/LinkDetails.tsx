@@ -111,7 +111,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
           className='details-link-header-link-icon'
           style={{
             background: color,
-            width: parseInt(width)
+            width: parseInt(width) + 2
           }}
         />
         {renderNodeName(link.target as GraphNode)}
@@ -135,6 +135,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
                 <RangeSlider 
                   color={color} 
                   id='width' 
+                  label='Link width'
                   min={1} 
                   max={10}
                   onChange={onInputChange} 

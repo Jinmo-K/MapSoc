@@ -223,6 +223,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
                 <RangeSlider 
                   color={color} 
                   id='size' 
+                  label='Node size'
                   min={1} 
                   max={10}
                   onChange={onInputChange} 

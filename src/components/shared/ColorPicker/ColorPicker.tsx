@@ -26,9 +26,11 @@ const paletteRow = ['#FFFFFF', '#F2F2F2', '#E6E6E6', '#CCCCCC', '#B3B3B3', '#999
 interface IColorPickerProps {
   value: string;
   onColorChange: (color: string) => void;
+  width?: string;
+  height?: string;
 }
 
-export const ColorPicker: React.FC<IColorPickerProps> = ({ value, onColorChange }) => {
+export const ColorPicker: React.FC<IColorPickerProps> = ({ value, onColorChange, width, height }) => {
   const [currentColor, setCurrentColor] = useState(value);
   const [showPalette, setShowPalette] = useState(false);
   const paletteRef = useRef<HTMLDivElement>(null);
@@ -75,7 +77,7 @@ export const ColorPicker: React.FC<IColorPickerProps> = ({ value, onColorChange 
   }, [value]);
 
   return (
-    <div className='color-picker'>
+    <div className='color-picker' style={{width: width || '100%', height: height || '100%'}}>
       <div className='color-picker-selector' onClick={togglePalette}>
         <div className='color-picker-selector-current' style={{background: currentColor}} />
       </div>

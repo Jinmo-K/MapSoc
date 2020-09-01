@@ -1,3 +1,14 @@
 .settings .form-col-wrapper {
   grid-template-columns: 50% 50%;
 }
+
+.settings .settings-label {
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings .icon-wrapper {
+  padding: 0 10px;
+}
+

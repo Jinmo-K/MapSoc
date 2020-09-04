@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { forceCollide } from 'd3';
-import ForceGraph2D, { ForceGraphMethods, GraphData, NodeObject, ForceGraphProps, LinkObject } from 'react-force-graph-2d';
+import ForceGraph2D, { ForceGraphMethods, ForceGraphProps } from 'react-force-graph-2d';
 
 import { addLink, addNode, deleteLink, deleteNode } from '../../../store/actions';
 
@@ -191,7 +191,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 
   handleSelectionClick = (e: MouseEvent) => {
     if (this.state.isSelecting) {
-      this.selectNodesInArea(this.state.selectionStartCoords[0], this.state.selectionStartCoords[1], e.clientX, e.clientY)
+      this.selectNodesInArea(this.state.selectionStartCoords[0], this.state.selectionStartCoords[1], e.clientX, e.clientY);
     }
     else {
       this.setState({ selectionStartCoords: [e.clientX, e.clientY] });
@@ -253,6 +253,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
    * @param node The node that was clicked
    */
   onNodeClick = (node: GraphNode) => {
+    console.log(this.props.graph.data)
     if (!this.state.hasClickBeenHandled) {
       if (this.state.currentTool === 'pointer') {
         this.setState({ currentNodeOrLink: node });
@@ -266,12 +267,14 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         this.handleNodePencilClick(node);
       }
     }
-    this.setState({ hasClickBeenHandled: true });
+    this.setState({ selectedNodes: [], hasClickBeenHandled: true });
   }
 
   handleNodePencilClick = (node: GraphNode) => {
     if (this.state.isAddingLink) {
-      if (!node.neighbours?.has(this.state.currentNodeOrLink!.id!) && node !== this.state.currentNodeOrLink) {
+      if (!this.props.graph.neighbours[node.id!].has(this.state.currentNodeOrLink as GraphNode) && 
+        node !== this.state.currentNodeOrLink) 
+      {
         this.addLink(this.state.currentNodeOrLink!.id!, node.id!);
         this.setState({ currentNodeOrLink: null })
       }
@@ -387,11 +390,10 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     const fontSize = 12;
     ctx.font = `${fontSize}px Sans-Serif`;
     const textWidth = ctx.measureText(label).width;
-    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top'
     ctx.fillStyle = nodeStyle.color!;
-    ctx.fillText(label, node.x!, node.y! + 5);
+    ctx.fillText(label, node.x!, node.y! + nodeStyle.size! + 5);
   
     // Highlight the node if it is being hovered or is selected
     let hoveredObject = this.state.hoveredObject;
@@ -468,6 +470,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       }
     }
     this.setState({ selectedNodes });
+    this.setState({ currentNodeOrLink: (selectedNodes.length === 1) ? selectedNodes[0] : null });
   }
 
   selectTool = (tool: DashboardTool) => {
@@ -478,9 +481,9 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     this.setState(prevState => {
       let currentNodeOrLink = prevState.currentNodeOrLink;
       return {
-          currentNodeOrLink: currentNodeOrLink === deletedObject ? null : currentNodeOrLink,
-          hoveredObject: null,
-          shouldPreventZoom: true
+        currentNodeOrLink: currentNodeOrLink === deletedObject ? null : currentNodeOrLink,
+        hoveredObject: null,
+        shouldPreventZoom: true
       }
     });
   }
@@ -522,6 +525,9 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     
     return (
       <main id='dashboard' onClick={this.onClick}>
+        {(this.props.auth.user && this.props.auth.user.id === 0)
+          &&  <div className='demo-message'>DEMO (some features may not work)</div>
+        }
         <div ref={this.selectionBox} className='selection-box' style={{display: this.state.isSelecting ? 'block' : 'none'}}/>
         {this.state.showContextMenu 
           &&  <ContextMenu {...contextMenuProps} /> 

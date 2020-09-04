@@ -7,6 +7,7 @@ import { login } from '../../../store/actions';
 import { useInput } from '../../../helpers/useInput';
 
 import './Login.css';
+import { GraphBg } from '../Home/GraphBg';
 
 interface ILoginProps extends PropsFromRedux {
 }
@@ -38,10 +39,9 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
 
   return (
     <main id='login' className='auth-page main-container'>
+      <GraphBg width={window.innerWidth} height={window.innerHeight} />
       <div className='auth-form-container'>
-        <div className='form-logo'>
-          <img src='/Logo-banner.png' alt='MapSoc logo' />
-        </div>
+        <h1>Login to continue</h1>
         <form onSubmit={handleFormSubmit} noValidate>
           <div className='form-group'>
             <label className='sr-only' htmlFor='login-email'>Email</label>

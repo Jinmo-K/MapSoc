@@ -12,9 +12,7 @@
 }
 
 .navbar-brand {
-  color: #408ab8;
   text-decoration: none;
-  letter-spacing: 0.1em;
 }
 
 .user-menu {
@@ -31,6 +29,7 @@
 
 .navbar-btn {
   font-size: 25px;
+  color: #408ab8
 }
 
 .fadein-btn {

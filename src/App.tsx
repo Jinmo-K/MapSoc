@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { useLocation, Switch } from 'react-router-dom';
 
@@ -19,11 +19,7 @@ const App: React.FC<IAppProps> = ({ auth, children, loadTestGraph, logout }) => 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   }
-
-  useEffect(() => {
-    if (auth.isLoggedIn) loadTestGraph();
-  }, [auth.isLoggedIn, loadTestGraph])
-
+  
   return (
     <div id='app'>
       {/* Navbar */}

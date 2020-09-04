@@ -8,3 +8,13 @@
   position: absolute;
   border: 2px dashed gray;
 }
+
+#dashboard .demo-message {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  opacity: 10%;
+  font-size: 30px;
+  font-weight: 600;
+}

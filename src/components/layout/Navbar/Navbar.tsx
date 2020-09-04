@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { AuthAction } from '../../../store/actions';
-
 import './Navbar.css';
 
 interface INavbarProps {
@@ -15,7 +13,7 @@ export const Navbar: React.FC<INavbarProps> = ({ isLoggedIn, logout, toggleModal
   return (
     <nav className='navbar'>
       <Link to='/' role='banner' className='navbar-brand'>
-        MapSoc
+        <img src='/logo-small.png' alt='Logo' />
       </Link>
       {
         (isLoggedIn)

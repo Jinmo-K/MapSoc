@@ -72,7 +72,7 @@ const login = (email: string, password: string): AppThunk => (dispatch) => {
 const logout = (): AppThunk => (dispatch) => {   
   dispatch(logoutAction());
   userService.logout(); 
-  // window.location.href = '/';
+  window.location.href = '/';
 };
 
 const resetUserErrors = (): AppThunk => (dispatch) => {

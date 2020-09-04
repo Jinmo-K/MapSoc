@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { RootState } from '../../../store/reducers';
 import { signup } from '../../../store/actions';
 import { useInput } from '../../../helpers/useInput';
+import { GraphBg } from '../Home/GraphBg';
 
 
 interface ISignupProps extends PropsFromRedux { 
@@ -47,10 +48,9 @@ const SignupPage: React.FC<ISignupProps> = ({ authErrors, signup }) => {
 
   return (
     <main id='signup' className='auth-page main-container'>
+      <GraphBg width={window.innerWidth} height={window.innerHeight} />
       <div className='auth-form-container'>
-        <div className='form-logo'>
-          <img src='/Logo-banner.png' alt='MapSoc logo' />
-        </div>
+        <h1>Sign in</h1>
         <form onSubmit={handleSubmit} noValidate>
           {/* Name */}
           <div className='form-group'>

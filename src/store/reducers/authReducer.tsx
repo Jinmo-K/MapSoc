@@ -10,12 +10,8 @@ interface AuthState {
 
 const initialState: AuthState = {
   errors: {},
-  isLoggedIn: true,
-  user: {
-    id: 0,
-    name: 'Test User',
-    email: 'test@mapsoc.com',
-  },
+  isLoggedIn: false,
+  user: {}
 };
 
 export default (state = initialState, action: AuthAction | UserAction): AuthState => {

@@ -12,60 +12,110 @@
 }
 
 .main-title {
-   margin: 0;
-   padding: 0;
-   color: #408ab8;
-   text-align: center;
-   text-transform: uppercase;
-   font-size: 4.2em;
-   letter-spacing: 0.1em;
-   background: white;
-   z-index: 1001;
+  margin: 0;
+  padding: 0;
+  color: #408ab8;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 4.2em;
+  letter-spacing: 0.1em;
+  background: white;
+  z-index: 1001;
 }
 
 .main-title .thin {
-   font-weight: 200;
+  font-weight: 200;
 }
 
 .auth-links {
-   margin-top: 40px;
-   display: flex;
-   width: 300px;
-   justify-content: space-between;
-   text-transform: uppercase;
-   letter-spacing: 0.2rem;
-   font-size: 1.5em;
-   z-index: 1;
+  margin-top: 40px;
+  display: flex;
+  width: 300px;
+  justify-content: space-between;
+  text-transform: uppercase;
+  letter-spacing: 0.2rem;
+  font-size: 1.5em;
+  z-index: 1;
 }
 
 .auth-links a {
-   text-decoration: none;
-   border: 3px solid #408ab8;
-   color: #408ab8;
-   padding: 5px 10px;
-   line-height: 1.5em;
+  text-decoration: none;
+  border: 3px solid #408ab8;
+  color: #408ab8;
+  padding: 5px 10px;
+  line-height: 1.5em;
 }
 
 .auth-links a:hover {
-   transform: scale(1.03);
+  transform: scale(1.03);
 }
 
 #home-bg {
-   position: absolute;
-   opacity: 0.4;
-   z-index: 0;
-   overflow: hidden;
-   max-width: 100vw;
-   max-height: 100vh;
+  position: absolute;
+  opacity: 0.4;
+  z-index: 0;
+  overflow: hidden;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+.st1{
+  fill:#408ab8;
+  stroke: #408ab8;
+}
+
+#home .logo {
+  transform: translateY(46px);
+  width: 338px;
+  height: 98px;
+}
+
+#home .demo-wrapper {
+  position: absolute;
+  bottom: 25px;
+  font-weight: 300;
+  font-size: 17px;
+  color: #315d78;
+}
+
+#home .demo-btn {
+  border: 3px solid #408ab8;
+  font-size: 1.4em;
+  color: white;
+  margin-top: 30px;
+  border-radius: 12px;
+  padding: 5px 7px;
+  background: #4694c5;
+  cursor: pointer;
+  z-index: 1001;
+  margin-left: 5px;
+}
+
+#home .demo-btn:hover {
+  background: #3d83af;
 }
 
 @media screen and (max-width: 600px) {
-   .main-title {
-      font-size: 3em;
-   }
+  .main-title {
+    font-size: 3em;
+  }
 
-   .auth-links {
-      font-size: 1.0em;
-      width: 250px;
-   }
+  .auth-links {
+    font-size: 1.0em;
+    width: 250px;
+    margin-top: 15px;
+  }
+
+  #home .logo {
+    width: 241px;
+    height: 70px;
+    transform: translateY(5px);
+  }
+}
+
+@media screen and (max-height: 360px) {
+  #home .demo-wrapper {
+    position: relative;
+    margin-top: 15px;
+  }
 }

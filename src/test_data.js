@@ -85,7 +85,6 @@ export default {
       fx: 0,
       fy: 0,
       groups: [],
-      neighbours: new Set(['2', '3', '4']),
       notes: '',
       isGroup: true,
     },
@@ -100,7 +99,6 @@ export default {
       fx: -35,
       fy: 60,
       groups: [],
-      neighbours: new Set(['2', '5']),
       notes: '',
       isGroup: true,
     },
@@ -114,7 +112,6 @@ export default {
         color: graphConstants.DEFAULT_NODE_COLOR,
         size: 2
       },
-      neighbours: new Set(['1', '0']),
       notes: '',
       isGroup: false,
     },
@@ -127,7 +124,6 @@ export default {
         color: graphConstants.DEFAULT_NODE_COLOR,
         size: graphConstants.DEFAULT_NODE_SIZE
       },
-      neighbours: new Set(['0', '4']),
       notes: '',
       isGroup: false,
     },
@@ -140,7 +136,6 @@ export default {
         color: graphConstants.DEFAULT_NODE_COLOR,
         size: graphConstants.DEFAULT_NODE_SIZE
       },
-      neighbours: new Set(['0', '3']),
       notes: '',
       isGroup: false,
     },
@@ -153,7 +148,6 @@ export default {
         color: graphConstants.DEFAULT_NODE_COLOR,
         size: graphConstants.DEFAULT_NODE_SIZE
       },
-      neighbours: new Set(['1']),
       notes: '',
       isGroup: false,
     }

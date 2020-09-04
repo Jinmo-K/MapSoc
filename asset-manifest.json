@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/MapSoc-client/static/css/main.7029e02f.chunk.css",
+    "main.css": "/MapSoc-client/static/css/main.f8f1cf8d.chunk.css",
     "main.js": "/MapSoc-client/static/js/main.293c0c7f.chunk.js",
     "runtime-main.js": "/MapSoc-client/static/js/runtime-main.b4e2bf73.js",
     "static/js/2.96207c9d.chunk.js": "/MapSoc-client/static/js/2.96207c9d.chunk.js",
     "index.html": "/MapSoc-client/index.html",
-    "precache-manifest.8a415e81c501b88e7d0ab8ebe3959c6a.js": "/MapSoc-client/precache-manifest.8a415e81c501b88e7d0ab8ebe3959c6a.js",
+    "precache-manifest.bceb30155b2d1c7e3b55c5695d697434.js": "/MapSoc-client/precache-manifest.bceb30155b2d1c7e3b55c5695d697434.js",
     "service-worker.js": "/MapSoc-client/service-worker.js",
     "static/js/2.96207c9d.chunk.js.LICENSE.txt": "/MapSoc-client/static/js/2.96207c9d.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.b4e2bf73.js",
     "static/js/2.96207c9d.chunk.js",
-    "static/css/main.7029e02f.chunk.css",
+    "static/css/main.f8f1cf8d.chunk.css",
     "static/js/main.293c0c7f.chunk.js"
   ]
 }

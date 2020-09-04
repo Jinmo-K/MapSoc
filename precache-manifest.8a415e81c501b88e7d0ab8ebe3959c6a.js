@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "068da7c22c11c22c1a81726f232429a2",
+    "revision": "46f89315d4fda0e5c4c758c82c7ca25c",
     "url": "/MapSoc-client/index.html"
   },
   {
-    "revision": "5ef80c81bf9c016b4067",
+    "revision": "c087dd11827f5d807be1",
     "url": "/MapSoc-client/static/css/main.7029e02f.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/MapSoc-client/static/js/2.96207c9d.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "5ef80c81bf9c016b4067",
-    "url": "/MapSoc-client/static/js/main.76b4ac0f.chunk.js"
+    "revision": "c087dd11827f5d807be1",
+    "url": "/MapSoc-client/static/js/main.293c0c7f.chunk.js"
   },
   {
     "revision": "623be4dc693e3fe6a97b",

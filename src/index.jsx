@@ -19,7 +19,7 @@ if(process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'developmen
 
 render(
   <Provider store={store}>
-    <Router>
+    <Router basename='/MapSoc-client/'>
       <App>
         <GuestRoute exact path='/' component={Home} />
         <GuestRoute path='/login' component={Login} />

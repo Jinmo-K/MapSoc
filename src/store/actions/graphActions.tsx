@@ -228,26 +228,18 @@ const updateNodeAction = (node: GraphNode): GraphAction => ({
 
 const addLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
   dispatch(addLinkAction(link));
-  graphService.addLink(graphId, link)
-    .catch(console.log);
 };
 
 const addNode = (graphId: number, node: GraphNode): AppThunk => (dispatch) => {
   dispatch(addNodeAction(node));
-  graphService.addNode(graphId, node)
-    .catch(console.log);
 };
 
 const deleteLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
   dispatch(deleteLinkAction(link));
-  graphService.deleteLink(graphId, link)
-    .catch(console.log);
 };
 
 const deleteNode = (graphId: number, node: GraphNode): AppThunk => (dispatch) => {
   dispatch(deleteNodeAction(node));
-  graphService.deleteNode(graphId, node)
-    .catch(console.log);
 };
 
 const getGraph = (graphId: number): AppThunk => (dispatch) => {
@@ -268,19 +260,11 @@ const loadTestGraph = (): AppThunk => (dispatch) => {
 
 const updateGraph = (data: Graph): AppThunk => (dispatch) => {
   dispatch(updateGraphBegin());
-  graphService.updateGraph(data)
-    .then(() => {
-      dispatch(updateGraphSuccess(data));
-    })
-    .catch(console.log);
+  dispatch(updateGraphSuccess(data));
 };
 
 const updateGraphSettings = (id: number, values: IGraphSettings): AppThunk => (dispatch) => {
-  graphService.updateGraphSettings(id, values)
-    .then(() => {
-      dispatch(updateGraphSettingsSuccess(values));
-    })
-    .catch(console.log);
+  dispatch(updateGraphSettingsSuccess(values));
 };
 
 /**
@@ -300,9 +284,7 @@ const updateNode = (node: GraphNode): AppThunk => (dispatch) => {
 }
 
 const saveLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
-  graphService.updateLink(graphId, link)
-    .then(() => dispatch(saveLinkSuccess(link)))
-    .catch(console.log);
+  dispatch(saveLinkSuccess(link));
 }
 
 /**
@@ -311,8 +293,5 @@ const saveLink = (graphId: number, link: GraphLink): AppThunk => (dispatch) => {
  * @param node    The node's updated values
  */
 const saveNode = (graphId: number, node: GraphNode): AppThunk => (dispatch) => {
-  // TODO: clean up node data
-  graphService.updateNode(graphId, node)
-    .then(() => dispatch(saveNodeSuccess(node)))
-    .catch(console.log);
+  dispatch(saveNodeSuccess(node));
 };

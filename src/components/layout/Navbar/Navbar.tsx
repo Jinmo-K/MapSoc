@@ -13,7 +13,7 @@ export const Navbar: React.FC<INavbarProps> = ({ isLoggedIn, logout, toggleModal
   return (
     <nav className='navbar'>
       <Link to='/' role='banner' className='navbar-brand'>
-        <img src='/logo-small.png' alt='Logo' />
+        <img src='/MapSoc-client/logo-small.png' alt='Logo' />
       </Link>
       {
         (isLoggedIn)

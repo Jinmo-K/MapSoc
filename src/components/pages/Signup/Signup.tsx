@@ -130,7 +130,8 @@ const SignupPage: React.FC<ISignupProps> = ({ authErrors, signup }) => {
             <button 
               className='form-submit' 
               type='submit' 
-              disabled={!(name && email && password && password2) || Object.keys(errors).length > 0}
+              disabled
+              title='Not available in client demo'
             >
               SIGN UP
             </button>

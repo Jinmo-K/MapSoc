@@ -81,7 +81,8 @@ const LoginPage: React.FC<ILoginProps> = ({ login }) => {
             <button 
               className='form-submit' 
               type='submit'
-              disabled={!(email && password) || Object.keys(errors).length > 0}
+              disabled
+              title='Not available in client demo'
             >
               LOGIN
             </button>

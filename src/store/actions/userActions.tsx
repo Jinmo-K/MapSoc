@@ -38,10 +38,5 @@ const updateUserSuccess = (user: IUser): UserAction => ({
 /* --------------------------------- Thunks --------------------------------- */
 
 const updateUser = (userId: number, values: Record<string, string>): AppThunk => (dispatch) => {
-  userService.update(userId, values)
-    .then(res => {
-      userService.setAuthToken(res.data.token);
-      dispatch(updateUserSuccess(res.data.user));
-    })
-    .catch(console.log);
+ 
 };

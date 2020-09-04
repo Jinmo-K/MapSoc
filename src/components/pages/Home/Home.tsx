@@ -33,7 +33,7 @@ export const HomePage: React.FC<IHomeProps> = ({ loadTestGraph, loginSuccess }) 
         }
         <img 
           className='logo' 
-          src='/logo-big-home.png' 
+          src='/MapSoc-client/logo-big-home.png' 
           alt='Logo' 
           style={!isLogoLoaded ? {width: 0} : {marginLeft: '2px'}}
           onLoad={() => setIsLogoLoaded(true)} 

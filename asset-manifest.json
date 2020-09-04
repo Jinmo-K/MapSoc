@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/mapsoc-client/static/css/main.0027ebf9.chunk.css",
+    "main.js": "/mapsoc-client/static/js/main.84634eb1.chunk.js",
+    "runtime-main.js": "/mapsoc-client/static/js/runtime-main.c2286a7c.js",
+    "static/js/2.96207c9d.chunk.js": "/mapsoc-client/static/js/2.96207c9d.chunk.js",
+    "index.html": "/mapsoc-client/index.html",
+    "precache-manifest.a8073dedb7caa858409b321bf75837c2.js": "/mapsoc-client/precache-manifest.a8073dedb7caa858409b321bf75837c2.js",
+    "service-worker.js": "/mapsoc-client/service-worker.js",
+    "static/js/2.96207c9d.chunk.js.LICENSE.txt": "/mapsoc-client/static/js/2.96207c9d.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.c2286a7c.js",
+    "static/js/2.96207c9d.chunk.js",
+    "static/css/main.0027ebf9.chunk.css",
+    "static/js/main.84634eb1.chunk.js"
+  ]
+}

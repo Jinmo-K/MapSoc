@@ -135,11 +135,11 @@
 .details-node-header .edit-icon-btn {
   position: absolute;
   top: 10px;
-  opacity: 80%;
+  opacity: 0.8;
 }
 
 .details-node-header .edit-icon-btn:hover {
-  opacity: 100%;
+  opacity: 1.0;
   cursor: pointer;
 }
 
@@ -161,11 +161,11 @@
 .details-notes .edit-icon-btn {
   position: absolute;
   top: 17px;
-  opacity: 80%;
+  opacity: 0.8;
 }
 
 .details-notes .edit-icon-btn:hover {
-  opacity: 100%;
+  opacity: 1.0;
   cursor: pointer;
 }
 

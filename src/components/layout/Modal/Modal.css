@@ -44,7 +44,7 @@
 
 #modalRoot .overlay {
   background: gray;
-  opacity: 40%;
+  opacity: 0.4;
   position: fixed;
   top: 0;
   left: 0;
@@ -77,7 +77,7 @@
   font-size: 35px;
   background-color: rgba(255, 255, 255, 0.2);
   width: 100%;
-  opacity: 80%;
+  opacity: 0.8;
   color: rgb(28, 119, 168);
   padding: 5px;
   border: 1px solid rgb(141, 208, 236);
@@ -86,7 +86,7 @@
 
 .modal-nav-selected, .modal-nav-selected:hover, .modal-nav-selected:focus {
   background-color: rgba(255, 255, 255, 0.8);
-  opacity: 100%;
+  opacity: 1.0;
 }
 
 .modal-content .form-label {

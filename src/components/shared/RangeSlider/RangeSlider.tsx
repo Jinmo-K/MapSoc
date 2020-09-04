@@ -32,7 +32,7 @@ export const RangeSlider: React.FC<IRangeSliderProps> = ({ color='white', id, la
           style={{
             background: color, 
             left: knobX, 
-            opacity: inputRef.current ? '100%' : '0', 
+            opacity: inputRef.current ? '1.0' : '0', 
             transform: inputRef.current ? 'scale(1)' : 'scale(0)'
           }} 
         />

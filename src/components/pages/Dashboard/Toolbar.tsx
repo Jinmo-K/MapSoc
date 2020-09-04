@@ -9,22 +9,22 @@ interface IToolbarProps {
 }
 
 const tools: DashboardTool[] = [
-  'pointer',
-  'pencil',
-  'eraser',
-  'selection',
+  'Select',
+  'Draw',
+  'Erase',
+  'Area select',
 ];
 
-const icons: Record<string, JSX.Element> = {
-  'pointer': <i className='fas fa-mouse-pointer' />,
-  'pencil': <i className='fas fa-pencil-alt' />,
-  'eraser': <i className='fas fa-eraser' />,
-  'selection': <i className='fas fa-vector-square' />
+const icons: Record<DashboardTool, JSX.Element> = {
+  'Select': <i className='fas fa-mouse-pointer' />,
+  'Draw': <i className='fas fa-pencil-alt' />,
+  'Erase': <i className='fas fa-eraser' />,
+  'Area select': <i className='fas fa-vector-square' />
 }
 
 const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
   const [currentTool, setCurrentTool] = useState('pointer');
-
+  
   return (
     <section className='toolbar'>
       {
@@ -39,7 +39,7 @@ const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
                 setCurrentTool(tool);
                 selectTool(tool);
               }}
-              title={tool}
+              title={tool + ` (${tool.charAt(0)})`}
             >
               {icons[tool]}
             </button>

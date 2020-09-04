@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GraphLink, GraphNode } from '../../../types';
 
 import { ColorPicker, RangeSlider } from '../../../components';
@@ -18,6 +18,15 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   const [width, setWidth] = useState(link.style!.width!.toString());
   const [isEditingWidth, setIsEditingWidth] = useState(false);
   const originalLink = useRef<GraphLink>({ ...link, style: {...link.style} });
+
+  /**
+   * Closes the size slider if user clicks outside of it
+   */
+  const closeSizeSliderOnClick = useCallback((e: MouseEvent) => {
+    if (!(e.target as HTMLElement).className.includes('slider')) {
+      setIsEditingWidth(false);
+    }
+  }, [])
 
   /**
    * Creates a copy of the link's current state
@@ -101,6 +110,10 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   useEffect(() => {
     if (link.id !== originalLink.current.id) load(link);
   }, [link, load]);
+
+  useEffect(() => {
+    isEditingWidth ? document.addEventListener('click', closeSizeSliderOnClick) : document.removeEventListener('click', closeSizeSliderOnClick);
+  }, [isEditingWidth]);
 
   return (
     <>

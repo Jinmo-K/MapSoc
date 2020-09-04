@@ -44,13 +44,13 @@ export default (state = initialState, action: GraphAction): GraphState => {
         links: [...state.data.links, action.link]
       }
       // Add each node to the other's neighbours list
-      let [nodeA, nodeB] = nextState.data.nodes.filter(node => node.id === action.link.source || node.id === action.link.target);
+      let [nodeA, nodeB] = nextState.data.nodes.filter(node => node === action.link.source || node === action.link.target);
       nextState.neighbours![nodeA.id!].add(nodeB);
       nextState.neighbours![nodeB.id!].add(nodeA);
       // If they are both group nodes, only update the target as it is the sub-group
       if (nodeA.isGroup && nodeB.isGroup) {
-        let targetNode = nodeA.id === action.link.target ? nodeA : nodeB;
-        targetNode.groups!.push(nodeA.id === action.link.source ? nodeA.id as string: nodeB.id as string);
+        let targetNode = nodeA === action.link.target ? nodeA : nodeB;
+        targetNode.groups!.push(nodeA === action.link.source ? nodeA.id as string: nodeB.id as string);
       }
       else {
         if (nodeA.isGroup) nodeB.groups!.push(nodeA.id as string);

@@ -14,7 +14,7 @@ import Details from './DetailsHOC';
 
 import './Dashboard.css';
 
-interface IDashboardProps extends PropsFromRedux{
+interface IDashboardProps extends PropsFromRedux {
 }
 
 interface IDashboardState {
@@ -35,7 +35,7 @@ interface IDashboardState {
   selectionStartCoords: [number, number];
 }
 
-export type DashboardTool = 'pointer' | 'pencil' | 'eraser' | 'selection';
+export type DashboardTool = 'Select' | 'Draw' | 'Erase' | 'Area select';
 
 class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   private graph = React.createRef() as React.MutableRefObject<ForceGraphMethods>;
@@ -47,7 +47,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     nodeClicks: 0,
     shouldPreventZoom: false,
     zoomAmount: 0,
-    currentTool: 'pointer',
+    currentTool: 'Select',
     currentNodeOrLink: null,
     hoveredObject: null,
     isAddingLink: false,
@@ -57,81 +57,20 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     ctx: null,
     selectedNodes: [],
     isSelecting: false,
-    selectionStartCoords: [0,0],
+    selectionStartCoords: [0, 0],
   }
 
   componentDidMount() {
     // Configure force
-    let graph = this.graph.current; 
+    let graph = this.graph.current;
     graph.d3Force('center', () => null);
     graph.d3Force('collide', forceCollide());
     this.setState({ zoomAmount: graph.zoom() });
     document.onkeyup = this.handleKeyPress;
   }
+  
 
-  closeContextMenu = () => {
-    this.setState({ showContextMenu: false });
-  }
-
-  deleteLink = (toDeleteLink: GraphLink) => {
-    this.props.deleteLink(this.props.graph.data.id!, toDeleteLink);
-    this.setPostDeleteState(toDeleteLink);
-  }
-
-  drawLink = (link: GraphLink, ctx: CanvasRenderingContext2D) => {
-    if (!this.state.ctx) this.setState({ ctx });
-    const linkStyle = link.style || {};
-    let source = link.source as GraphNode;
-    let target = link.target as GraphNode;
-    // Highlight the link if it is being hovered or selected
-    if ([this.state.hoveredObject, this.state.currentNodeOrLink].includes(link)) {
-      this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, linkStyle.width! + 3, source.x!, source.y!, target.x!, target.y!); 
-    }
-    this.drawLine(ctx, linkStyle.color!, linkStyle.width!, source.x!, source.y!, target.x!, target.y!); 
-  }
-
-  drawSelectionBox = (x: number, y: number) => {
-    let box = this.selectionBox.current!;
-    let [startX, startY] = this.state.selectionStartCoords;
-    let left = Math.min(startX, x);
-    let top = Math.min(startY, y);
-    let right = Math.max(startX, x);
-    let bottom = Math.max(startY, y);
-    box.style.left = left + 'px';
-    box.style.top = top + 'px';
-    box.style.width = (right - left) + 'px';
-    box.style.height = (bottom - top) + 'px';
-  }
-
-  /**
-   * Returns true if user clicked on the context menu
-   * @param e The click event
-   */
-  isContextMenuClick = (e: React.MouseEvent): boolean => {
-    if (!this.state.showContextMenu) return false;
-    let menuPosition = this.contextMenu.current!.getBoundingClientRect();
-    return (
-      !(e.clientX < menuPosition.left || 
-        e.clientX > menuPosition.right || 
-        e.clientY < menuPosition.top || 
-        e.clientY > menuPosition.bottom)
-    );
-  }
-
-  /**
-   * Handles all left-click events
-   * @param e The click event
-   */
-  onClick = (e: React.MouseEvent) => {
-    this.setState({ hasClickBeenHandled: false });
-    let isMenuClick = this.isContextMenuClick(e);
-    // Close context menu if it's open and user clicks outside of it
-    if (this.state.showContextMenu && !isMenuClick) {
-      // Let all other click handlers know that no further action is required
-      this.setState({ hasClickBeenHandled: true });
-      this.closeContextMenu();
-    }
-  };
+/* ----------------------------- Event handlers ----------------------------- */
 
   handleKeyPress = (e: KeyboardEvent) => {
     switch (e.keyCode) {
@@ -154,31 +93,6 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         break;
     }
   }
-
-  /**
-   * Called whenever the background of the force graph is clicked. 
-   * 
-   * @param e The click event
-   */
-  onBackgroundClick = (e: MouseEvent) => {
-    if (!this.state.hasClickBeenHandled) {
-      switch (this.state.currentTool) {
-        case 'pointer':
-          if (this.state.currentNodeOrLink) {
-            this.setState({ currentNodeOrLink: null });
-          }
-          break;
-        case 'pencil':
-          this.handlePencilClick(e);
-          break;
-        
-        case 'selection':
-          this.handleSelectionClick(e);
-          break;
-      }
-      this.setState({ hasClickBeenHandled: true });
-    }
-  };
 
   handlePencilClick = (e: MouseEvent) => {
     if (this.state.isAddingLink) {
@@ -205,6 +119,64 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
   }
 
   /**
+   * Called whenever the background of the force graph is clicked. 
+   * 
+   * @param e The click event
+   */
+  onBackgroundClick = (e: MouseEvent) => {
+    if (!this.state.hasClickBeenHandled) {
+      switch (this.state.currentTool) {
+        case 'Select':
+          if (this.state.currentNodeOrLink) {
+            this.setState({ currentNodeOrLink: null });
+          }
+          break;
+        case 'Draw':
+          this.handlePencilClick(e);
+          break;
+
+        case 'Area select':
+          this.handleSelectionClick(e);
+          break;
+      }
+      this.setState({ hasClickBeenHandled: true });
+    }
+  };
+
+  /**
+   * Handles all left-click events
+   * @param e The click event
+   */
+  onClick = (e: React.MouseEvent) => {
+    this.setState({ hasClickBeenHandled: false });
+    let isMenuClick = this.isContextMenuClick(e);
+    // Close context menu if it's open and user clicks outside of it
+    if (this.state.showContextMenu && !isMenuClick) {
+      // Let all other click handlers know that no further action is required
+      this.setState({ hasClickBeenHandled: true });
+      this.closeContextMenu();
+    }
+  };
+
+  onMouseMove = (e: React.MouseEvent) => {
+    if (this.state.isSelecting) {
+      this.drawSelectionBox(e.clientX, e.clientY);
+    }
+
+    let { x, y } = this.graph.current.screen2GraphCoords(e.clientX, e.clientY);
+    this.setState({
+      mouseX: x,
+      mouseY: y
+    });
+  }
+
+  onHover = (nodeOrLink: GraphNode | GraphLink | null) => {
+    if (nodeOrLink !== this.state.hoveredObject) {
+      this.setState({ hoveredObject: nodeOrLink });
+    }
+  }
+
+  /**
    * Renders the context menu at the position of the mouse
    * 
    * @param {React.MouseEvent} e  Mouse right click event
@@ -222,112 +194,11 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     });
   }
 
-  onMouseMove = (e: React.MouseEvent) => {
-    if (this.state.isSelecting) {
-      this.drawSelectionBox(e.clientX, e.clientY);
-    }
 
-    let {x, y} = this.graph.current.screen2GraphCoords(e.clientX, e.clientY);
-    this.setState({
-      mouseX: x,
-      mouseY: y
-    });
-  }
+/* ------------------------------ Context menu ----------------------------- */
 
-  onLinkClick = (link: GraphLink) => {
-    if (!this.state.hasClickBeenHandled) {
-      if (this.state.currentTool === 'pointer') {
-        this.setState({ currentNodeOrLink: link });
-      } 
-      else if (this.state.currentTool === 'eraser') {
-        this.deleteLink(link);
-      }
-    }
-    this.setState({ hasClickBeenHandled: true });
-  }
-
-  /**
-   * Callback function for node left-button clicks. Sends the node details to the inspector 
-   * and also tracks double-clicking for unsticking node positions.
-   * 
-   * @param node The node that was clicked
-   */
-  onNodeClick = (node: GraphNode) => {
-    console.log(this.props.graph.data)
-    if (!this.state.hasClickBeenHandled) {
-      if (this.state.currentTool === 'pointer') {
-        this.setState({ currentNodeOrLink: node });
-        this.trackNodeDblClick(node);
-      } 
-      else if (this.state.currentTool === 'eraser') {
-        this.deleteNode(node);
-        this.setState({ isAddingLink: false });
-      }
-      else if (this.state.currentTool === 'pencil') {
-        this.handleNodePencilClick(node);
-      }
-    }
-    this.setState({ selectedNodes: [], hasClickBeenHandled: true });
-  }
-
-  handleNodePencilClick = (node: GraphNode) => {
-    if (this.state.isAddingLink) {
-      if (!this.props.graph.neighbours[node.id!].has(this.state.currentNodeOrLink as GraphNode) && 
-        node !== this.state.currentNodeOrLink) 
-      {
-        this.addLink(this.state.currentNodeOrLink!.id!, node.id!);
-        this.setState({ currentNodeOrLink: null })
-      }
-      this.setState({ isAddingLink: false });
-    }
-    else {
-      this.setState({ 
-        currentNodeOrLink: node,
-        isAddingLink: true,
-        mouseX: node.x!,
-        mouseY: node.y!
-      });
-    }
-  }
-
-  trackNodeDblClick = (node: GraphNode) => {
-    this.setState(prevState => {
-      // Double click unsticks a node's position
-      if (prevState.nodeClicks >= 1) {
-        this.unstickNode(node);
-      }
-      // Reset number of clicks if another has not been detected within the interval
-      setTimeout(() => {
-        this.setState({ nodeClicks: 0 });
-      }, 200);
-      // Update the number of clicks
-      return {
-        ...prevState,
-        nodeClicks: prevState.nodeClicks + 1
-      }
-    });
-  }
-
-  onHover = (nodeOrLink: GraphNode | GraphLink | null) => {
-    if (nodeOrLink !== this.state.hoveredObject) {
-      this.setState({ hoveredObject: nodeOrLink });
-    }
-  }
-
-  onNodeDrag = (node: GraphNode) => {
-    if (this.state.selectedNodes.length) {
-
-    }
-    else {
-
-    }
-    this.setState({ currentNodeOrLink: node });
-  }
-
-  onNodeDragEnd = (node: GraphNode) => {
-    this.graph.current.d3ReheatSimulation();
-    node.fx = node.x;
-    node.fy = node.y;
+  closeContextMenu = () => {
+    this.setState({ showContextMenu: false });
   }
 
   createNodeFromMenu = () => {
@@ -338,9 +209,27 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     this.addNode(originX, originY);
   }
 
+  /**
+   * Returns true if user clicked on the context menu
+   * @param e The click event
+   */
+  isContextMenuClick = (e: React.MouseEvent): boolean => {
+    if (!this.state.showContextMenu) return false;
+    let menuPosition = this.contextMenu.current!.getBoundingClientRect();
+    return (
+      !(e.clientX < menuPosition.left ||
+        e.clientX > menuPosition.right ||
+        e.clientY < menuPosition.top ||
+        e.clientY > menuPosition.bottom)
+    );
+  }
+
+
+/* ---------------------------- Node interactions --------------------------- */
+
   addNode = (originX: number, originY: number) => {
     // Translate to node canvas position
-    let {x: fx, y: fy} = this.graph.current.screen2GraphCoords(originX, originY)
+    let { x: fx, y: fy } = this.graph.current.screen2GraphCoords(originX, originY)
     // Create new default node
     let newNode: GraphNode = {
       id: this.props.graph.data.nodeSequence,
@@ -370,6 +259,100 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     this.setPostDeleteState(toDeleteNode);
   }
 
+  handleNodePencilClick = (node: GraphNode) => {
+    if (this.state.isAddingLink) {
+      if (!this.props.graph.neighbours[node.id!].has(this.state.currentNodeOrLink as GraphNode) &&
+        node !== this.state.currentNodeOrLink) {
+        this.addLink(this.state.currentNodeOrLink!.id!, node.id!);
+      }
+      this.setState({ isAddingLink: false });
+    }
+    else {
+      this.setState({
+        currentNodeOrLink: node,
+        isAddingLink: true,
+        mouseX: node.x!,
+        mouseY: node.y!
+      });
+    }
+  }
+
+  /**
+   * Callback function for node left-button clicks. Sends the node details to the inspector 
+   * and also tracks double-clicking for unsticking node positions.
+   * 
+   * @param node The node that was clicked
+   */
+  onNodeClick = (node: GraphNode) => {
+    console.log(this.props.graph.data)
+    if (!this.state.hasClickBeenHandled) {
+      if (this.state.currentTool === 'Select') {
+        this.setState({ currentNodeOrLink: node });
+        this.trackNodeDblClick(node);
+      }
+      else if (this.state.currentTool === 'Erase') {
+        this.deleteNode(node);
+        this.setState({ isAddingLink: false });
+      }
+      else if (this.state.currentTool === 'Draw') {
+        this.handleNodePencilClick(node);
+      }
+    }
+    this.setState({ selectedNodes: [], hasClickBeenHandled: true });
+  }
+
+  onNodeDrag = (node: GraphNode) => {
+    if (this.state.selectedNodes.length) {
+
+    }
+    else {
+
+    }
+    this.setState({ currentNodeOrLink: node });
+  }
+
+  onNodeDragEnd = (node: GraphNode) => {
+    this.graph.current.d3ReheatSimulation();
+    node.fx = node.x;
+    node.fy = node.y;
+  }
+
+  selectNodesInArea = (x: number, y: number, x0: number, y0: number) => {
+    let { x: x1, y: y1 } = this.graph.current.screen2GraphCoords(x, y);
+    let { x: x2, y: y2 } = this.graph.current.screen2GraphCoords(x0, y0);
+    let left = Math.min(x1, x2);
+    let right = Math.max(x1, x2);
+    let top = Math.min(y1, y2);
+    let bottom = Math.max(y1, y2);
+    let selectedNodes: GraphNode[] = [];
+
+    for (let node of this.props.graph.data.nodes) {
+      if (left <= node.x! && node.x! <= right && top <= node.y! && node.y! <= bottom) {
+        selectedNodes.push(node);
+      }
+    }
+    this.setState({ selectedNodes });
+    this.setState({ currentNodeOrLink: (selectedNodes.length === 1) ? selectedNodes[0] : null });
+  }
+
+  trackNodeDblClick = (node: GraphNode) => {
+    this.setState(prevState => {
+      // Double click unsticks a node's position
+      if (prevState.nodeClicks >= 1) {
+        this.unstickNode(node);
+      }
+      // Reset number of clicks if another has not been detected within the interval
+      setTimeout(() => {
+        this.setState({ nodeClicks: 0 });
+      }, 200);
+      // Update the number of clicks
+      return {
+        ...prevState,
+        nodeClicks: prevState.nodeClicks + 1
+      }
+    });
+  }
+
   /**
    * Removes the fixed coordinates fx and fy of a node
    * 
@@ -381,10 +364,76 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     this.graph.current.d3ReheatSimulation();
   }
 
+
+/* ---------------------------- Link interactions --------------------------- */
+
+  addLink = (source: string | number, target: string | number) => {
+    let newLink = {
+      id: this.props.graph.data.linkSequence,
+      source: this.props.graph.idToNode[source],
+      target: this.props.graph.idToNode[target],
+      style: {
+        color: this.props.graph.data.settings!.defaultLinkColor,
+        width: this.props.graph.data.settings!.defaultLinkWidth
+      }
+    };
+    this.props.addLink(this.props.graph.data.id!, newLink);
+    this.setState({ currentNodeOrLink: newLink });
+  }
+
+  deleteLink = (toDeleteLink: GraphLink) => {
+    this.props.deleteLink(this.props.graph.data.id!, toDeleteLink);
+    this.setPostDeleteState(toDeleteLink);
+  }
+
+  onLinkClick = (link: GraphLink) => {
+    if (!this.state.hasClickBeenHandled) {
+      if (this.state.currentTool === 'Select') {
+        this.setState({ currentNodeOrLink: link });
+      }
+      else if (this.state.currentTool === 'Erase') {
+        this.deleteLink(link);
+      }
+    }
+    this.setState({ hasClickBeenHandled: true });
+  }
+  
+
+/* ----------------------------- Canvas renders ----------------------------- */
+
+  drawCircle = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) => {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  drawLine = (ctx: CanvasRenderingContext2D, color: string, width: number, startX: number, startY: number, endX: number, endY: number) => {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  drawLink = (link: GraphLink, ctx: CanvasRenderingContext2D) => {
+    if (!this.state.ctx) this.setState({ ctx });
+    const linkStyle = link.style || {};
+    let source = link.source as GraphNode;
+    let target = link.target as GraphNode;
+    // Highlight the link if it is being hovered or selected
+    if ([this.state.hoveredObject, this.state.currentNodeOrLink].includes(link)) {
+      this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, linkStyle.width! + 3, source.x!, source.y!, target.x!, target.y!);
+    }
+    this.drawLine(ctx, linkStyle.color!, linkStyle.width!, source.x!, source.y!, target.x!, target.y!);
+  }
+
   drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     if (!this.state.ctx) this.setState({ ctx });
     const nodeStyle = node.style || {};
-    
+
     // Draw the label
     const label = node.label || node.name || '';
     const fontSize = 12;
@@ -394,7 +443,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     ctx.textBaseline = 'top'
     ctx.fillStyle = nodeStyle.color!;
     ctx.fillText(label, node.x!, node.y! + nodeStyle.size! + 5);
-  
+
     // Highlight the node if it is being hovered or is selected
     let hoveredObject = this.state.hoveredObject;
     if ([hoveredObject, this.state.currentNodeOrLink, ...this.state.selectedNodes].includes(node)) {
@@ -402,8 +451,8 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     }
     // Or light highlighting if it is a neighbour of the hovered node/link
     else if (
-      hoveredObject && 
-        (('isGroup' in hoveredObject && this.props.graph.neighbours[hoveredObject.id!].has(node)) ||
+      hoveredObject &&
+      (('isGroup' in hoveredObject && this.props.graph.neighbours[hoveredObject.id!].has(node)) ||
         ('source' in hoveredObject && [hoveredObject.source, hoveredObject.target].includes(node)))
     ) {
       this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR);
@@ -421,57 +470,25 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     }
   }
 
-  drawCircle = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) => {
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = color;
-    ctx.fill();
-  }
-
-  addLink = (source: string | number, target: string | number) => {
-    let newLink = {
-      id: this.props.graph.data.linkSequence,
-      source, 
-      target,
-      style: {
-        color: this.props.graph.data.settings!.defaultLinkColor,
-        width: this.props.graph.data.settings!.defaultLinkWidth
-      }
-    };
-    this.props.addLink(this.props.graph.data.id!, newLink)
+  drawSelectionBox = (x: number, y: number) => {
+    let box = this.selectionBox.current!;
+    let [startX, startY] = this.state.selectionStartCoords;
+    let left = Math.min(startX, x);
+    let top = Math.min(startY, y);
+    let right = Math.max(startX, x);
+    let bottom = Math.max(startY, y);
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    box.style.width = (right - left) + 'px';
+    box.style.height = (bottom - top) + 'px';
   }
 
   drawTempLink = (ctx: CanvasRenderingContext2D, originX: number, originY: number) => {
     this.drawLine(ctx, 'black', 1, originX, originY, this.state.mouseX, this.state.mouseY)
   }
 
-  drawLine = (ctx: CanvasRenderingContext2D, color: string, width: number, startX: number, startY: number, endX: number, endY: number) => {
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.stroke();
-    ctx.closePath();
-  }
-
-  selectNodesInArea = (x: number, y: number, x0: number, y0: number) => {
-    let {x: x1, y: y1} = this.graph.current.screen2GraphCoords(x, y);
-    let {x: x2, y: y2} = this.graph.current.screen2GraphCoords(x0, y0);
-    let left = Math.min(x1, x2);
-    let right = Math.max(x1, x2);
-    let top = Math.min(y1, y2);
-    let bottom = Math.max(y1, y2);
-    let selectedNodes: GraphNode[] = [];
-    
-    for (let node of this.props.graph.data.nodes) {
-      if (left <= node.x! && node.x! <= right && top <= node.y! && node.y! <= bottom) {
-        selectedNodes.push(node);
-      }
-    }
-    this.setState({ selectedNodes });
-    this.setState({ currentNodeOrLink: (selectedNodes.length === 1) ? selectedNodes[0] : null });
-  }
+  
+/* ------------------------------ State setters ----------------------------- */
 
   selectTool = (tool: DashboardTool) => {
     this.setState({ currentTool: tool });
@@ -495,9 +512,9 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     }
     const detailsProps = {
       ref: this.details,
-      nodeOrLink: {...this.state.currentNodeOrLink!}
+      nodeOrLink: { ...this.state.currentNodeOrLink! }
     }
-    const graphProps: ForceGraphProps = { 
+    const graphProps: ForceGraphProps = {
       graphData: this.props.graph.data,
       nodeAutoColorBy: "group",
       onBackgroundClick: this.onBackgroundClick,
@@ -522,23 +539,23 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         this.setState({ zoomAmount: k })
       },
     }
-    
+
     return (
       <main id='dashboard' onClick={this.onClick}>
         {(this.props.auth.user && this.props.auth.user.id === 0)
-          &&  <div className='demo-message'>DEMO (some features may not work)</div>
+          && <div className='demo-message'>DEMO (some features may not work)</div>
         }
-        <div ref={this.selectionBox} className='selection-box' style={{display: this.state.isSelecting ? 'block' : 'none'}}/>
-        {this.state.showContextMenu 
-          &&  <ContextMenu {...contextMenuProps} /> 
+        <div ref={this.selectionBox} className='selection-box' style={{ display: this.state.isSelecting ? 'block' : 'none' }} />
+        {this.state.showContextMenu
+          && <ContextMenu {...contextMenuProps} />
         }
-        {this.state.currentNodeOrLink 
-          &&  <Details {...detailsProps} /> 
+        {this.state.currentNodeOrLink
+          && <Details {...detailsProps} />
         }
         <Toolbar selectTool={this.selectTool} />
-        <section 
-          className='graph' 
-          onContextMenu={this.onRightClick} 
+        <section
+          className='graph'
+          onContextMenu={this.onRightClick}
           onMouseMove={this.state.isAddingLink || this.state.isSelecting ? this.onMouseMove : undefined}
         >
           <ForceGraph2D ref={this.graph} {...graphProps} />

@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/MapSoc-client/precache-manifest.32b6c6fa2a080ffa819506f731e56fa5.js"
+  "/MapSoc-client/precache-manifest.7b5fb4fa399052f0ad16774c1c5f26fc.js"
 );
 
 self.addEventListener('message', (event) => {

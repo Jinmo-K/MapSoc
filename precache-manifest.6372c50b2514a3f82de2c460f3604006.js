@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "c6390043a037aacaf3d0b3cbe72f6ab3",
+    "revision": "eafa58129c346c4068c275e32b12b82b",
     "url": "/MapSoc-client/index.html"
   },
   {

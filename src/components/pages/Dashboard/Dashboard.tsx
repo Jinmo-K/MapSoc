@@ -284,7 +284,6 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
    * @param node The node that was clicked
    */
   onNodeClick = (node: GraphNode) => {
-    console.log(this.props.graph.data)
     if (!this.state.hasClickBeenHandled) {
       if (this.state.currentTool === 'Select') {
         this.setState({ currentNodeOrLink: node });

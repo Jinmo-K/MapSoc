@@ -23,7 +23,7 @@ const icons: Record<DashboardTool, JSX.Element> = {
 }
 
 const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
-  const [currentTool, setCurrentTool] = useState('pointer');
+  const [currentTool, setCurrentTool] = useState('Select');
   
   return (
     <section className='toolbar'>

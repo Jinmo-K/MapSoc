@@ -6,6 +6,7 @@ import './Toolbar.css';
 
 interface IToolbarProps {
   selectTool: (tool: DashboardTool) => void;
+  currentTool: DashboardTool;
 }
 
 const tools: DashboardTool[] = [
@@ -22,9 +23,7 @@ const icons: Record<DashboardTool, JSX.Element> = {
   'Area select': <i className='fas fa-vector-square' />
 }
 
-const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
-  const [currentTool, setCurrentTool] = useState('Select');
-  
+const Toolbar: React.SFC<IToolbarProps> = ({ currentTool, selectTool }) => {
   return (
     <section className='toolbar'>
       {
@@ -36,7 +35,6 @@ const Toolbar: React.SFC<IToolbarProps> = ({ selectTool }) => {
               name={tool}
               className={currentTool === tool ? 'btn toolbar-btn toolbar-btn-selected' : 'btn toolbar-btn'}
               onClick={() => {
-                setCurrentTool(tool);
                 selectTool(tool);
               }}
               title={tool + ` (${tool.charAt(0)})`}

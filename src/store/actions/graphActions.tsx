@@ -11,6 +11,7 @@ export {
   deleteLink,
   deleteNode,
   getGraph,
+  handleKeyboardShortcut,
   loadTestGraph,
   saveLink,
   saveNode,
@@ -54,6 +55,11 @@ interface IGetGraphFailureAction {
 interface IGetGraphSuccessAction {
   type: typeof graphConstants.GET_GRAPH_SUCCESS;
   graph: Graph;
+}
+
+interface IHandleKeyboardShortcutAction {
+  type: typeof graphConstants.HANDLE_KEYBOARD_SHORTCUT;
+  shouldHandle: boolean;
 }
 
 interface ISaveLinkFailureAction {
@@ -119,6 +125,7 @@ export type GraphAction =
   IGetGraphBeginAction |
   IGetGraphFailureAction |
   IGetGraphSuccessAction |
+  IHandleKeyboardShortcutAction |
   ISaveLinkFailureAction |
   ISaveLinkSuccessAction |
   ISaveNodeFailureAction | 
@@ -167,6 +174,11 @@ const getGraphFailure = (errors: Record<string, string>): GraphAction => ({
 const getGraphSuccess = (graph: Graph): GraphAction => ({
   type: graphConstants.GET_GRAPH_SUCCESS,
   graph
+});
+
+const handleKeyboardShortcut = (shouldHandle: boolean): GraphAction => ({
+  type: graphConstants.HANDLE_KEYBOARD_SHORTCUT,
+  shouldHandle
 });
 
 const saveLinkFailure = (errors: Record<string, string>): GraphAction => ({

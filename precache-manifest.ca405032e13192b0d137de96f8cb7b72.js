@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "78b485ec9c7c556d6dd944d2bc26af01",
+    "revision": "ec04f6c8fc975fbf0bc78ea535d17b74",
     "url": "/MapSoc-client/index.html"
   },
   {
-    "revision": "855f0d5e2c04dd54f813",
+    "revision": "3af6a6c3c2f42c4b5ff6",
     "url": "/MapSoc-client/static/css/main.f8f1cf8d.chunk.css"
   },
   {
-    "revision": "c50e44d837208fa3e748",
-    "url": "/MapSoc-client/static/js/2.96207c9d.chunk.js"
+    "revision": "7161ac7314a44431aec5",
+    "url": "/MapSoc-client/static/js/2.69e33b3d.chunk.js"
   },
   {
     "revision": "f20e2662688cf09fbbf15af00a8e1cf0",
-    "url": "/MapSoc-client/static/js/2.96207c9d.chunk.js.LICENSE.txt"
+    "url": "/MapSoc-client/static/js/2.69e33b3d.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "855f0d5e2c04dd54f813",
-    "url": "/MapSoc-client/static/js/main.458ba9c9.chunk.js"
+    "revision": "3af6a6c3c2f42c4b5ff6",
+    "url": "/MapSoc-client/static/js/main.f138653f.chunk.js"
   },
   {
     "revision": "623be4dc693e3fe6a97b",

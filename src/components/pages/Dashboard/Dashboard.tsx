@@ -233,15 +233,12 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     // Create new default node
     let newNode: GraphNode = {
       id: this.props.graph.data.nodeSequence,
-      name: "",
-      neighbours: new Set<string | number>(),
+      name: '',
       groups: [],
       isGroup: false,
       notes: '',
-      style: {
-        color: this.props.graph.data.settings!.defaultNodeColor,
-        size: this.props.graph.data.settings!.defaultNodeSize,
-      },
+      color: this.props.graph.data.settings!.defaultNodeColor,
+      val: this.props.graph.data.settings!.defaultNodeSize,
       type: 'node',
     };
     // Assign coordinates to the node
@@ -367,14 +364,14 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 /* ---------------------------- Link interactions --------------------------- */
 
   addLink = (source: string | number, target: string | number) => {
-    let newLink = {
+    let newLink: GraphLink = {
       id: this.props.graph.data.linkSequence,
       source: this.props.graph.idToNode[source],
       target: this.props.graph.idToNode[target],
-      style: {
-        color: this.props.graph.data.settings!.defaultLinkColor,
-        width: this.props.graph.data.settings!.defaultLinkWidth
-      }
+      color: this.props.graph.data.settings!.defaultLinkColor,
+      width: this.props.graph.data.settings!.defaultLinkWidth,
+      notes: '',
+      type: 'link'
     };
     this.props.addLink(this.props.graph.data.id!, newLink);
     this.setState({ currentNodeOrLink: newLink });
@@ -419,19 +416,17 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 
   drawLink = (link: GraphLink, ctx: CanvasRenderingContext2D) => {
     if (!this.state.ctx) this.setState({ ctx });
-    const linkStyle = link.style || {};
     let source = link.source as GraphNode;
     let target = link.target as GraphNode;
     // Highlight the link if it is being hovered or selected
     if ([this.state.hoveredObject, this.state.currentNodeOrLink].includes(link)) {
-      this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, linkStyle.width! + 3, source.x!, source.y!, target.x!, target.y!);
+      this.drawLine(ctx, graphConstants.HIGHLIGHT_COLOR, link.width! + 3, source.x!, source.y!, target.x!, target.y!);
     }
-    this.drawLine(ctx, linkStyle.color!, linkStyle.width!, source.x!, source.y!, target.x!, target.y!);
+    this.drawLine(ctx, link.color!, link.width!, source.x!, source.y!, target.x!, target.y!);
   }
 
   drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     if (!this.state.ctx) this.setState({ ctx });
-    const nodeStyle = node.style || {};
 
     // Draw the label
     const label = node.label || node.name || '';
@@ -440,13 +435,13 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
     const textWidth = ctx.measureText(label).width;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top'
-    ctx.fillStyle = nodeStyle.color!;
-    ctx.fillText(label, node.x!, node.y! + nodeStyle.size! + 5);
+    ctx.fillStyle = node.color!;
+    ctx.fillText(label, node.x!, node.y! + node.val! + 5);
 
     // Highlight the node if it is being hovered or is selected
     let hoveredObject = this.state.hoveredObject;
     if ([hoveredObject, this.state.currentNodeOrLink, ...this.state.selectedNodes].includes(node)) {
-      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_COLOR);
+      this.drawCircle(ctx, node.x!, node.y!, node.val! + 3, graphConstants.HIGHLIGHT_COLOR);
     }
     // Or light highlighting if it is a neighbour of the hovered node/link
     else if (
@@ -454,18 +449,18 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
       (('isGroup' in hoveredObject && this.props.graph.neighbours[hoveredObject.id!].has(node)) ||
         ('source' in hoveredObject && [hoveredObject.source, hoveredObject.target].includes(node)))
     ) {
-      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size! + 3, graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR);
+      this.drawCircle(ctx, node.x!, node.y!, node.val! + 3, graphConstants.HIGHLIGHT_NEIGHBOUR_COLOR);
     }
     // If a new link is being added, draw it based on coordinates of the selected node
     if (node === this.state.currentNodeOrLink && this.state.isAddingLink) {
       this.drawTempLink(ctx, node.x!, node.y!);
     }
     // Draw main node shape, either default circle or icon
-    if (nodeStyle.icon) {
+    if (node.icon) {
 
     }
     else {
-      this.drawCircle(ctx, node.x!, node.y!, nodeStyle.size!, nodeStyle.color!)
+      this.drawCircle(ctx, node.x!, node.y!, node.val!, node.color!)
     }
   }
 

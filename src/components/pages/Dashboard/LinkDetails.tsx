@@ -13,11 +13,11 @@ interface ILinkDetailsProps {
 }
 
 const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, saveLink, updateLink }) => {
-  const [color, setColor] = useState(link.style!.color!);
+  const [color, setColor] = useState(link.color!);
   const [notes, setNotes] = useState(link.notes || '');
-  const [width, setWidth] = useState(link.style!.width!.toString());
+  const [width, setWidth] = useState(link.width!.toString());
   const [isEditingWidth, setIsEditingWidth] = useState(false);
-  const originalLink = useRef<GraphLink>({ ...link, style: {...link.style} });
+  const originalLink = useRef<GraphLink>({ ...link });
 
   /**
    * Closes the size slider if user clicks outside of it
@@ -34,7 +34,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
    */
   const createNextLink = (): GraphLink => {
     let currentLink = linkIndex[link.id!];
-    return {...currentLink, style: {...currentLink.style!}};
+    return {...currentLink};
   }
   
   const handleCancelClick = () => {
@@ -46,23 +46,23 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   const hasNewValues = (): boolean => {
     let original = originalLink.current;
     return (
-      width !== original.style!.width!.toString() || 
-      color !== original.style!.color || 
+      width !== original.width!.toString() || 
+      color !== original.color || 
       notes !== original.notes
     );
   };
 
   const load = (nextLink: GraphLink) => {
-    originalLink.current = {...nextLink, style: {...nextLink.style}};
-    setColor(nextLink.style!.color!);
+    originalLink.current = {...nextLink};
+    setColor(nextLink.color!);
     setNotes(nextLink.notes!);
-    setWidth(nextLink.style!.width!.toString());
+    setWidth(nextLink.width!.toString());
   };
 
   const onColorChange = (nextColor: string) => {
     let updatedLink = createNextLink();
     setColor(nextColor);
-    updatedLink.style!.color = nextColor;
+    updatedLink.color = nextColor;
     saveLink(graphId, updatedLink);
     updateLink(updatedLink);
   };
@@ -79,7 +79,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
     if (['width'].includes(field)) {
       if (field === 'width') {
         setWidth(value);
-        updatedLink.style!.width = parseInt(value);
+        updatedLink.width = parseInt(value);
       }
       saveLink(graphId, updatedLink);
     }
@@ -92,7 +92,7 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
   };
 
   const renderNodeName = (node: GraphNode) => {
-    let nodeColor = node.style!.color;
+    let nodeColor = node.color;
     return (
       <div className='details-link-header-node'>
         <i 

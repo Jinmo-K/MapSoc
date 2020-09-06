@@ -18,10 +18,10 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
   const [isEditingName, setIsEditingName] = useState(!node.name);
   const [isEditingSize, setIsEditingSize] = useState(false);
   const [isGroup, setIsGroup] = useState(node.isGroup);
-  const [size, setSize] = useState(node.style!.size!.toString());
-  const [color, setColor] = useState(node.style!.color!);
+  const [size, setSize] = useState(node.val!.toString());
+  const [color, setColor] = useState(node.color!);
   const [notes, setNotes] = useState(node.notes!);
-  const originalNode = useRef<GraphNode>({...node, style: {...node.style}});
+  const originalNode = useRef<GraphNode>({...node});
 
   /**
    * Closes the size slider if user clicks outside of it
@@ -38,7 +38,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
    */
   const createNextNode = (): GraphNode => {
     let currentNode = nodeIndex[node.id!];
-    return {...currentNode, style: {...currentNode.style!}};
+    return {...currentNode};
   }
 
   const handleInputReturnKey = (e: React.KeyboardEvent) => {
@@ -68,29 +68,29 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     return (
       name !== original.name || 
       isGroup !== original.isGroup ||
-      size !== original.style!.size!.toString() || 
-      color !== original.style!.color || 
+      size !== original.val!.toString() || 
+      color !== original.color || 
       notes !== original.notes
     );
   };
   
   const load = (nextNode: GraphNode) => {
     // Save the original values, except positioning, which is taken care of by d3
-    originalNode.current = {...nextNode, style: {...nextNode.style}};
+    originalNode.current = {...nextNode};
     removePositionProps(originalNode.current);
     setName(nextNode.name);
     setIsGroup(nextNode.isGroup);
     setIsEditingName(!nextNode.name);
     setIsEditingSize(false);
-    setSize(nextNode.style!.size!.toString());
-    setColor(nextNode.style!.color!);
+    setSize(nextNode.val!.toString());
+    setColor(nextNode.color!);
     setNotes(nextNode.notes!);
   }
 
   const onColorChange = (nextColor: string) => {
     setColor(nextColor);
     let updatedNode = createNextNode();
-    updatedNode.style!.color = nextColor;
+    updatedNode.color = nextColor;
     saveNode(graphId, updatedNode);
     updateNode(updatedNode);
   }
@@ -133,7 +133,7 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     else if (['size'].includes(field)) {
       if (field === 'size') {
         setSize(value);
-        updatedNode.style!.size = parseInt(value);
+        updatedNode.val = parseInt(value);
       }
       saveNode(graphId, updatedNode);
     }

@@ -2,7 +2,7 @@ import React from 'react'
 import { connect, ConnectedProps } from 'react-redux';
 
 import { RootState } from '../../../store/reducers';
-import { saveLink, saveNode, updateLink, updateNode } from '../../../store/actions';
+import { handleKeyboardShortcut, saveLink, saveNode, updateLink, updateNode } from '../../../store/actions';
 import { GraphNode, GraphLink } from '../../../types';
 import NodeDetails from './NodeDetails';
 import LinkDetails from './LinkDetails';
@@ -14,7 +14,7 @@ interface IDetailsProps extends PropsFromRedux {
 }
 
 const DetailsHOC: React.ForwardRefRenderFunction<HTMLDivElement, IDetailsProps> = 
-  ({ graphId, linkIndex, nodeIndex, nodeOrLink, saveLink, saveNode, updateLink, updateNode }, ref) => {
+  ({ graphId, linkIndex, nodeIndex, nodeOrLink, saveLink, saveNode, handleKeyboardShortcut, updateLink, updateNode }, ref) => {
     
   return (
     <div ref={ref} className='details'>
@@ -26,6 +26,7 @@ const DetailsHOC: React.ForwardRefRenderFunction<HTMLDivElement, IDetailsProps> 
                 node: nodeOrLink as GraphNode,
                 nodeIndex,
                 saveNode,
+                handleKeyboardShortcut,
                 updateNode,
               }}
             />
@@ -35,6 +36,7 @@ const DetailsHOC: React.ForwardRefRenderFunction<HTMLDivElement, IDetailsProps> 
                 link: nodeOrLink as GraphLink,
                 linkIndex,
                 saveLink,
+                handleKeyboardShortcut,
                 updateLink
               }}
             />
@@ -44,6 +46,7 @@ const DetailsHOC: React.ForwardRefRenderFunction<HTMLDivElement, IDetailsProps> 
 };
 
 const mapDispatchToProps = {
+  handleKeyboardShortcut,
   saveLink,
   saveNode,
   updateLink,

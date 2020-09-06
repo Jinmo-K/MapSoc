@@ -8,11 +8,12 @@ interface ILinkDetailsProps {
   link: GraphLink;
   linkIndex: Record<string, GraphLink>;
   graphId: number;
+  handleKeyboardShortcut: (shouldHandle: boolean) => void;
   saveLink: (graphId: number, link: GraphLink) => void;
   updateLink: (link: GraphLink) => void;
 }
 
-const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, saveLink, updateLink }) => {
+const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, handleKeyboardShortcut, saveLink, updateLink }) => {
   const [color, setColor] = useState(link.color!);
   const [notes, setNotes] = useState(link.notes || '');
   const [width, setWidth] = useState(link.width!.toString());
@@ -160,7 +161,12 @@ const LinkDetails: React.FC<ILinkDetailsProps> = ({ link, linkIndex, graphId, sa
       </div>
 
       {/* Notes */}
-      <NotesSection onNotesBlur={onNotesBlur} onChange={onInputChange} notes={notes} />
+      <NotesSection 
+        onNotesBlur={onNotesBlur} 
+        onChange={onInputChange} 
+        notes={notes} 
+        handleKeyboardShortcut={handleKeyboardShortcut}
+      />
 
       {/* Undo button */}
       {(hasNewValues())

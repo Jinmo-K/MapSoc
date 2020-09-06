@@ -7,13 +7,14 @@ import NotesSection from './NotesSection';
 
 interface IDetailsProps {
   graphId: number;
+  handleKeyboardShortcut: (shouldHandle: boolean) => void;
   node: GraphNode;
   nodeIndex: Record<string, GraphNode>;
   saveNode: (graphId: number, node: GraphNode) => void;
   updateNode: (node: GraphNode) => void;
 }
 
-const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, updateNode, saveNode}) => {
+const NodeDetails: React.FC<IDetailsProps> = ({ graphId, handleKeyboardShortcut, node, nodeIndex, updateNode, saveNode}) => {
   const [name, setName] = useState(node.name);
   const [isEditingName, setIsEditingName] = useState(!node.name);
   const [isEditingSize, setIsEditingSize] = useState(false);
@@ -159,6 +160,10 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
     isEditingSize ? document.addEventListener('click', closeSizeSliderOnClick) : document.removeEventListener('click', closeSizeSliderOnClick);
   }, [isEditingSize]);
 
+  useEffect(() => {
+    handleKeyboardShortcut(!isEditingName);
+  }, [isEditingName]);
+
   return (
     <>
       <div className='details-node-icon-header'>
@@ -243,7 +248,12 @@ const NodeDetails: React.FC<IDetailsProps> = ({ graphId, node, nodeIndex, update
       </div>
 
       {/* Notes */}
-      <NotesSection onNotesBlur={onNotesBlur} onChange={onInputChange} notes={notes} />
+      <NotesSection 
+        onNotesBlur={onNotesBlur} 
+        onChange={onInputChange} 
+        notes={notes} 
+        handleKeyboardShortcut={handleKeyboardShortcut}
+      />
 
       {/* Undo button */}
       {(hasNewValues())

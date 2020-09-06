@@ -1,23 +1,26 @@
 import React, { useState, useRef } from 'react';
 
 interface INotesSectionProps {
+  handleKeyboardShortcut: (shouldHandle: boolean) => void;
   onNotesBlur: () => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   notes: string;
 }
 
-const NotesSection: React.FC<INotesSectionProps> = ({ onNotesBlur, onChange, notes }) => {
+const NotesSection: React.FC<INotesSectionProps> = ({ handleKeyboardShortcut, onNotesBlur, onChange, notes }) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const handleEditNotesClick = () => {
     setIsEditingNotes(true);
+    handleKeyboardShortcut(false);
     ref.current!.disabled = false;
     ref.current!.focus();
   }
 
   const onBlur = () => {
     setIsEditingNotes(false);
+    handleKeyboardShortcut(true);
     ref.current!.disabled = true;
     onNotesBlur();
   }

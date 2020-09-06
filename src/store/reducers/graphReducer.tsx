@@ -10,6 +10,7 @@ interface GraphState {
   isLoading: boolean;
   isUpdating: boolean;
   neighbours: Record<string, Set<GraphNode>>;
+  handleKeyboardShortcut: boolean;
 }
 
 const initialState: GraphState = {
@@ -30,6 +31,7 @@ const initialState: GraphState = {
   isLoading: false,
   isUpdating: false,
   neighbours: {},
+  handleKeyboardShortcut: true,
 };
 
 // *Some state must be mutated (eg. nodes and links), which is a consequence of using d3
@@ -132,6 +134,12 @@ export default (state = initialState, action: GraphAction): GraphState => {
       return {
         ...nextState,
         isLoading: true,
+      };
+
+    case graphConstants.HANDLE_KEYBOARD_SHORTCUT:
+      return {
+        ...state,
+        handleKeyboardShortcut: action.shouldHandle
       };
 
     case graphConstants.UPDATE_GRAPH_BEGIN:

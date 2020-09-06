@@ -73,6 +73,30 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 /* ----------------------------- Event handlers ----------------------------- */
 
   handleKeyPress = (e: KeyboardEvent) => {
+    // Tool shortcuts
+    if (this.props.graph.handleKeyboardShortcut) {
+      switch (e.keyCode) {
+        // 's' - select
+        case 83:
+          this.selectTool('Select');
+          break;
+        // 'd' - draw
+        case 68:
+          this.selectTool('Draw');
+          break;
+        // 'e' - erase
+        case 69:
+          this.selectTool('Erase');
+          break;
+        // 'a' - area select
+        case 65:
+          this.selectTool('Area select');
+          break;
+        default: 
+          break;
+      }
+    }
+    // Other interactions
     switch (e.keyCode) {
       // Esc
       case 27:
@@ -485,6 +509,12 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
 /* ------------------------------ State setters ----------------------------- */
 
   selectTool = (tool: DashboardTool) => {
+    if (tool !== 'Draw' && this.state.isAddingLink) {
+      this.setState({ isAddingLink: false });
+    }
+    if (tool !== 'Area select' && this.state.isSelecting) {
+      this.setState({ isSelecting: false });
+    }
     this.setState({ currentTool: tool });
   }
 
@@ -546,7 +576,7 @@ class Dashboard extends React.Component<IDashboardProps, IDashboardState> {
         {this.state.currentNodeOrLink
           && <Details {...detailsProps} />
         }
-        <Toolbar selectTool={this.selectTool} />
+        <Toolbar currentTool={this.state.currentTool} selectTool={this.selectTool} />
         <section
           className='graph'
           onContextMenu={this.onRightClick}

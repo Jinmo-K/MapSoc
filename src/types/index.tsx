@@ -31,14 +31,10 @@ export interface GraphNode extends NodeObject {
   name?: string;
   label?: string;
   neighbours?: Set<string | number>;
-  style?: GraphNodeStyle;
+  color?: string;
+  val?: number;
   type?: 'node';
   notes?: string;
-}
-
-export interface GraphNodeStyle {
-  color?: string;
-  size?: number;
   icon?: undefined;
 }
 
@@ -46,14 +42,10 @@ export interface GraphNodeStyle {
 
 export interface GraphLink extends LinkObject {
   id?: number;
-  style?: GraphLinkStyle;
+  width?: number;
+  color?: string;
   type?: 'link';
   notes?: string;  
-}
-
-export interface GraphLinkStyle {
-  color?: string;
-  width?: number;
   arrowToSource?: boolean;
   arrowToTarget?: boolean;
 }
